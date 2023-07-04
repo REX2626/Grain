@@ -4,9 +4,15 @@
 #include <math.h>
 #include <SDL2/SDL.h>
 
+#include "elements.h"
+
 using namespace std;
 
 const int WIDTH = 800, HEIGHT = 600;
+const int GRID_RATIO = 10;
+const int GRID_WIDTH = WIDTH / GRID_RATIO, GRID_HEIGHT = HEIGHT / GRID_RATIO;
+
+Element grid[GRID_WIDTH][GRID_HEIGHT];
 
 void draw(SDL_Renderer *renderer, double deltaTime){
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
