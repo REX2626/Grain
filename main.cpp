@@ -9,8 +9,8 @@
 using namespace std;
 
 const int WIDTH = 800, HEIGHT = 800;
-const int GRID_RATIO = 100;
-const int GRID_WIDTH = WIDTH / GRID_RATIO, GRID_HEIGHT = HEIGHT / GRID_RATIO;
+const int GRID_SIZE = 10;
+const int GRID_WIDTH = WIDTH / GRID_SIZE, GRID_HEIGHT = HEIGHT / GRID_SIZE;
 
 Element grid[GRID_WIDTH][GRID_HEIGHT];
 
@@ -18,7 +18,7 @@ int xMouse, yMouse;
 
 // Pixel to grid square
 int p_to_grid(int x){
-    return floor(x / GRID_RATIO);
+    return floor(x / GRID_SIZE);
 }
 
 void place_element(){
@@ -45,7 +45,7 @@ void draw(SDL_Renderer* renderer, double deltaTime){
     // Looping through all elements in the grid array and drawing each element
     for (int i = 0; i < GRID_WIDTH; i++){
         for (int j = 0; j < GRID_HEIGHT; j++){
-            grid[i][j].render(renderer, GRID_RATIO, GRID_RATIO);
+            grid[i][j].render(renderer, GRID_SIZE);
         }
     }
 
@@ -64,7 +64,13 @@ void update(double deltaTime){
 
 int main(int argc, char* args[]){
 
-    // Set up
+    // Initial message & SDL version
+    SDL_version version;
+    SDL_GetVersion(&version);
+    cout << "Initializing Grain (SDL version: " << (int) version.major << "." <<
+            (int) version.minor << "." << (int) version.patch << ")" << endl;
+
+    // Set up SDL
     if (SDL_Init(SDL_INIT_VIDEO||SDL_INIT_EVENTS) < 0){
         cout << "SDL could not initialize: " << SDL_GetError() << endl;
         return 1;
@@ -102,18 +108,18 @@ int main(int argc, char* args[]){
                 running = false;
                 break;
             }
+        }
 
-            if (event.type == SDL_MOUSEBUTTONDOWN){
-                // Updates mouse position, then places an element at the mouse position
-                SDL_GetMouseState(&xMouse, &yMouse);
+        // Place element if left click held down, as well as update mouse position
+        if (SDL_GetMouseState(&xMouse, &yMouse) & SDL_BUTTON_LEFT){
+                // Places an element at the mouse position
                 place_element();
             }
-        }
 
         auto end = chrono::system_clock::now();
         chrono::duration<double> dt = end - start;
         deltaTime = dt.count();
-        cout << "FPS: " << (1.0 / deltaTime) << "\n";
+        //cout << "FPS: " << (1.0 / deltaTime) << "\n";
     }
 
     SDL_DestroyWindow(window);
