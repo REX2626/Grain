@@ -16,6 +16,8 @@ Element grid[GRID_WIDTH][GRID_HEIGHT];
 
 int xMouse, yMouse;
 
+char selectedElement = 'e';
+
 // Pixel to grid square
 int p_to_grid(int x){
     return floor(x / GRID_SIZE);
@@ -105,8 +107,15 @@ int main(int argc, char* args[]){
 
         // Place element if left click held down, as well as update mouse position
         if (SDL_GetMouseState(&xMouse, &yMouse) & SDL_BUTTON_LEFT){
-                // Places an element at the mouse position
-                place_element();
+                // Places the selected element at the mouse position
+                switch (selectedElement){
+                    case 'e': // element
+                        place_element();
+                        break;
+                    case 's': // sand
+                        place_element();
+                        break;
+                }
             }
 
         auto end = chrono::system_clock::now();

@@ -1,5 +1,5 @@
-# Fluid-Sim
-A particle based fluid simulator written in C++
+# Sand/Water Sim
+A grid based sand and water simulation written in C++
 
 [Example](https://www.escapemotions.com/experiments/fluid_water_3/)
 

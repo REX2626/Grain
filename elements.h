@@ -17,7 +17,11 @@ class Element{
         }
 
         void update(double deltaTime){
+            y += 1;
+        }
 
+        void print(){
+            std::cout << "Element of x: " << x << " y: " << y << "\n";
         }
 };
 
