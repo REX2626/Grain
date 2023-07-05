@@ -11,11 +11,7 @@ class Element{
         void render(SDL_Renderer* renderer, int size){
             SDL_SetRenderDrawColor(renderer, colour.r, colour.g, colour.b, colour.a);
 
-            SDL_Rect rect;
-            rect.x = x * size;
-            rect.y = y * size;
-            rect.w = size;
-            rect.h = size;
+            SDL_Rect rect = {x * size, y * size, size, size};
 
             SDL_RenderFillRect(renderer, &rect);
         }

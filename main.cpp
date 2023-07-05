@@ -25,14 +25,7 @@ void place_element(){
     int x = p_to_grid(xMouse);
     int y = p_to_grid(yMouse);
 
-    // Don't know how to shorten this yet
-    Element element;
-    element.x = x;
-    element.y = y;
-    element.colour.r = 255;
-    element.colour.g = 165;
-    element.colour.b = 0;
-    element.colour.a = 255;
+    Element element = {x, y, .colour = {255, 165, 0, SDL_ALPHA_OPAQUE}};
 
     grid[x][y] = element;
 }
