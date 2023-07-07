@@ -18,18 +18,18 @@ class Liquid: public Element{
             // Moves sideways randomly
             if (grid.isFull(x, y+1)){
                 if (rand() % 20 < 10){
-                    if (grid.isEmpty(x-1, y)){
+                    if (x-1 >= 0 && grid.isEmpty(x-1, y)){
                         grid.move(*this, x-1, y);
                     }
-                    else if (grid.isEmpty(x+1, y)){
+                    else if (x+1 <= GRID_WIDTH && grid.isEmpty(x+1, y)){
                         grid.move(*this, x+1, y);
                     }
                 }
                 else{
-                    if (grid.isEmpty(x+1, y)){
+                    if (x+1 <= GRID_WIDTH && grid.isEmpty(x+1, y)){
                         grid.move(*this, x+1, y);
                     }
-                    else if (grid.isEmpty(x-1, y)){
+                    else if (x-1 >= 0 && grid.isEmpty(x-1, y)){
                         grid.move(*this, x-1, y);
                     }
                 }
@@ -65,15 +65,15 @@ class MovableSolid: public Solid{
                 grid.move(*this, x, y+1);
             }
             // Displaces water
-            else if (grid.get(x, y+1).tag == "water"){
+            else if (y+1 < GRID_HEIGHT && grid.get(x, y+1).tag == "water"){
                 grid.swap(*this, x, y+1);
             }
             // Moves diagonally
             else if (grid.isFull(x, y+1)){
-                if (grid.isEmpty(x-1, y+1)){
+                if (x-1 >= 0 && grid.isEmpty(x-1, y+1)){
                     grid.move(*this, x-1, y+1);
                 }
-                else if (grid.isEmpty(x+1, y+1)){
+                else if (x+1 <= GRID_WIDTH && grid.isEmpty(x+1, y+1)){
                     grid.move(*this, x+1, y+1);
                 }
             }
