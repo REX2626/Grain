@@ -9,6 +9,7 @@ class Element{
         int x;
         int y;
         SDL_Colour colour = {106, 13, 173}; // Purple (this should be overridden by child class)
+        string tag = ""; // Used to differentiate elements
 
         Element(int x, int y): x(x), y(y){
 

@@ -22,6 +22,18 @@ class Grid{
             matrix[x][y]->setY(y);
         }
 
+        void swap(Element element, int x, int y){
+            Element* swappedElement = getPtr(x, y);
+            matrix[x][y] = matrix[element.x][element.y];
+            matrix[element.x][element.y] = swappedElement;
+
+            matrix[element.x][element.y]->setX(element.x);
+            matrix[element.x][element.y]->setY(element.y);
+
+            matrix[x][y]->setX(x);
+            matrix[x][y]->setY(y);
+        }
+
         bool isFull(int x, int y){
             return (bool) matrix[x][y];
         }

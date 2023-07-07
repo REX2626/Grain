@@ -37,6 +37,9 @@ void place_element(){
         case 1: // Sand
             grid.set(x, y, new Sand(x, y));
             break;
+        case 2: // Water
+            grid.set(x, y, new Water(x, y));
+            break;
     }
 }
 
@@ -126,12 +129,16 @@ int main(int argc, char* args[]){
             else if (event.type == SDL_KEYDOWN){
                 switch (event.key.keysym.sym){
 
-                    case SDLK_0:
+                    case SDLK_1:
                         selectedElement = 0;
                         break;
 
-                    case SDLK_1:
+                    case SDLK_2:
                         selectedElement = 1;
+                        break;
+
+                    case SDLK_3:
+                        selectedElement = 2;
                         break;
 
                 }
