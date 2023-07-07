@@ -12,11 +12,11 @@ const int WIDTH = 800, HEIGHT = 800;
 const int GRID_SIZE = 10;
 const int GRID_WIDTH = WIDTH / GRID_SIZE, GRID_HEIGHT = HEIGHT / GRID_SIZE;
 
-Element grid[GRID_WIDTH][GRID_HEIGHT];
+Element* grid[GRID_WIDTH][GRID_HEIGHT]; // Array of pointers, pointing to Elements
 
 int xMouse, yMouse;
 
-char selectedElement = 'e';
+int selectedElement = 0;
 
 // Pixel to grid square
 int p_to_grid(int x){
@@ -27,9 +27,14 @@ void place_element(){
     int x = p_to_grid(xMouse);
     int y = p_to_grid(yMouse);
 
-    Element element = {x, y, .colour = {255, 165, 0, SDL_ALPHA_OPAQUE}};
-
-    grid[x][y] = element;
+    switch (selectedElement){
+        case 0: // Stone
+            grid[x][y] = new Stone(x, y);
+            break;
+        case 1: // Sand
+            grid[x][y] = new Sand(x, y);
+            break;
+    }
 }
 
 void draw(SDL_Renderer* renderer, double deltaTime){
@@ -40,7 +45,9 @@ void draw(SDL_Renderer* renderer, double deltaTime){
     // Looping through all elements in the grid array and drawing each element
     for (int i = 0; i < GRID_WIDTH; i++){
         for (int j = 0; j < GRID_HEIGHT; j++){
-            grid[i][j].render(renderer, GRID_SIZE);
+            if (grid[i][j]){
+                (*grid[i][j]).render(renderer, GRID_SIZE);
+            }
         }
     }
 
@@ -52,7 +59,9 @@ void update(double deltaTime){
     // Looping through all elements in the grid array and updating each element
     for (int i = 0; i < GRID_WIDTH; i++){
         for (int j = 0; j < GRID_HEIGHT; j++){
-            grid[i][j].update(deltaTime);
+            if (grid[i][j]){
+                (*grid[i][j]).update(deltaTime);
+            }
         }
     }
 }
@@ -83,6 +92,13 @@ int main(int argc, char* args[]){
         return 1;
     }
 
+    // Fill grid with null pointers
+    for (int i = 0; i < GRID_WIDTH; i++){
+        for (int j = 0; j < GRID_HEIGHT; j++){
+            grid[i][j] = nullptr;
+        }
+    }
+
     // Set up Main loop
     double deltaTime = 0;
     bool running = true;
@@ -103,19 +119,26 @@ int main(int argc, char* args[]){
                 running = false;
                 break;
             }
+
+            else if (event.type == SDL_KEYDOWN){
+                switch (event.key.keysym.sym){
+
+                    case SDLK_0:
+                        selectedElement = 0;
+                        break;
+
+                    case SDLK_1:
+                        selectedElement = 1;
+                        break;
+
+                }
+            }
         }
 
         // Place element if left click held down, as well as update mouse position
         if (SDL_GetMouseState(&xMouse, &yMouse) & SDL_BUTTON_LEFT){
                 // Places the selected element at the mouse position
-                switch (selectedElement){
-                    case 'e': // element
-                        place_element();
-                        break;
-                    case 's': // sand
-                        place_element();
-                        break;
-                }
+                place_element();
             }
 
         auto end = chrono::system_clock::now();
