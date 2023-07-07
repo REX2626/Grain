@@ -31,7 +31,7 @@ class MovableSolid: public Solid{
         }
 
         void update(double deltaTime){
-            if (y < GRID_HEIGHT && grid.isEmpty(x, y+1)){
+            if (y+1 < GRID_HEIGHT && grid.isEmpty(x, y+1)){
                 grid.move(*this, x, y+1);
             }
         }
