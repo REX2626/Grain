@@ -4,15 +4,18 @@
 #include <math.h>
 #include <SDL2/SDL.h>
 
-#include "elements.h"
-
 using namespace std;
 
-const int WIDTH = 800, HEIGHT = 800;
+const int FPS = 60;
+const int WIDTH = 800, HEIGHT = 600;
 const int GRID_SIZE = 10;
 const int GRID_WIDTH = WIDTH / GRID_SIZE, GRID_HEIGHT = HEIGHT / GRID_SIZE;
 
-Element* grid[GRID_WIDTH][GRID_HEIGHT]; // Array of pointers, pointing to Elements
+#include "base_element.h"
+#include "grid.h"
+Grid grid;
+#include "elements.h"
+
 
 int xMouse, yMouse;
 
@@ -29,10 +32,10 @@ void place_element(){
 
     switch (selectedElement){
         case 0: // Stone
-            grid[x][y] = new Stone(x, y);
+            grid.set(x, y, new Stone(x, y));
             break;
         case 1: // Sand
-            grid[x][y] = new Sand(x, y);
+            grid.set(x, y, new Sand(x, y));
             break;
     }
 }
@@ -43,10 +46,10 @@ void draw(SDL_Renderer* renderer, double deltaTime){
     SDL_RenderClear(renderer);
 
     // Looping through all elements in the grid array and drawing each element
-    for (int i = 0; i < GRID_WIDTH; i++){
-        for (int j = 0; j < GRID_HEIGHT; j++){
-            if (grid[i][j]){
-                (*grid[i][j]).render(renderer, GRID_SIZE);
+    for (int x = 0; x < GRID_WIDTH; x++){
+        for (int y = 0; y < GRID_HEIGHT; y++){
+            if (grid.isFull(x, y)){
+                grid.get(x, y).render(renderer, GRID_SIZE);
             }
         }
     }
@@ -57,10 +60,10 @@ void draw(SDL_Renderer* renderer, double deltaTime){
 
 void update(double deltaTime){
     // Looping through all elements in the grid array and updating each element
-    for (int i = 0; i < GRID_WIDTH; i++){
-        for (int j = 0; j < GRID_HEIGHT; j++){
-            if (grid[i][j]){
-                (*grid[i][j]).update(deltaTime);
+    for (int x = 0; x < GRID_WIDTH; x++){
+        for (int y = GRID_HEIGHT-1; y >= 0; y--){ // From bottom to top
+            if (grid.isFull(x, y)){
+                (*grid.getPtr(x, y)).update(deltaTime); // Have to use pointer, as Element will force Element methods
             }
         }
     }
@@ -93,9 +96,9 @@ int main(int argc, char* args[]){
     }
 
     // Fill grid with null pointers
-    for (int i = 0; i < GRID_WIDTH; i++){
-        for (int j = 0; j < GRID_HEIGHT; j++){
-            grid[i][j] = nullptr;
+    for (int x = 0; x < GRID_WIDTH; x++){
+        for (int y = 0; y < GRID_HEIGHT; y++){
+            grid.set(x, y, nullptr);
         }
     }
 
@@ -144,6 +147,9 @@ int main(int argc, char* args[]){
         auto end = chrono::system_clock::now();
         chrono::duration<double> dt = end - start;
         deltaTime = dt.count();
+        if (deltaTime < 1.0/FPS){
+            SDL_Delay(1000 * (1.0/FPS - deltaTime)); // Max framerate is FPS, ensures elements fall slow enough
+        }
         //cout << "FPS: " << (1.0 / deltaTime) << "\n";
     }
 
