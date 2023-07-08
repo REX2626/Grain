@@ -12,24 +12,24 @@ class Liquid: public Element{
 
         void update(double deltaTime){
             // Falling
-            if (y+1 < GRID_HEIGHT && grid.isEmpty(x, y+1)){
+            if (grid.inBounds(x, y+1) && grid.isEmpty(x, y+1)){
                 grid.move(*this, x, y+1);
             }
             // Moves sideways randomly
-            if (grid.isFull(x, y+1)){
+            if (y+1 == GRID_HEIGHT || grid.isFull(x, y+1)){
                 if (rand() % 20 < 10){
-                    if (x-1 >= 0 && grid.isEmpty(x-1, y)){
+                    if (grid.inBounds(x-1, y) && grid.isEmpty(x-1, y)){
                         grid.move(*this, x-1, y);
                     }
-                    else if (x+1 <= GRID_WIDTH && grid.isEmpty(x+1, y)){
+                    else if (grid.inBounds(x+1, y) && grid.isEmpty(x+1, y)){
                         grid.move(*this, x+1, y);
                     }
                 }
                 else{
-                    if (x+1 <= GRID_WIDTH && grid.isEmpty(x+1, y)){
+                    if (grid.inBounds(x+1, y) && grid.isEmpty(x+1, y)){
                         grid.move(*this, x+1, y);
                     }
-                    else if (x-1 >= 0 && grid.isEmpty(x-1, y)){
+                    else if (grid.inBounds(x-1, y) && grid.isEmpty(x-1, y)){
                         grid.move(*this, x-1, y);
                     }
                 }
@@ -60,20 +60,23 @@ class MovableSolid: public Solid{
         }
 
         void update(double deltaTime){
+            // Return if at the bottom
+            if (!grid.inBounds(x, y+1)){return;}
+
             // Falling
-            if (y+1 < GRID_HEIGHT && grid.isEmpty(x, y+1)){
+            if (grid.isEmpty(x, y+1)){
                 grid.move(*this, x, y+1);
             }
             // Displaces water
-            else if (y+1 < GRID_HEIGHT && grid.get(x, y+1).tag == "water"){
+            else if (grid.get(x, y+1).tag == "water"){
                 grid.swap(*this, x, y+1);
             }
             // Moves diagonally
             else if (grid.isFull(x, y+1)){
-                if (x-1 >= 0 && grid.isEmpty(x-1, y+1)){
+                if (grid.inBounds(x-1, y+1) && grid.isEmpty(x-1, y+1)){
                     grid.move(*this, x-1, y+1);
                 }
-                else if (x+1 <= GRID_WIDTH && grid.isEmpty(x+1, y+1)){
+                else if (grid.inBounds(x+1, y+1) && grid.isEmpty(x+1, y+1)){
                     grid.move(*this, x+1, y+1);
                 }
             }

@@ -1,8 +1,29 @@
 class Grid{
     private:
         Element* matrix[GRID_WIDTH][GRID_HEIGHT]; // Array of pointers, pointing to Elements
+        Element* matrixCopy[GRID_WIDTH][GRID_HEIGHT]; // Copy to ensure elements can't be updated multiple times
 
     public:
+        void copy(){
+            for (int x = 0; x < GRID_WIDTH; x++){
+                for (int y = 0; y < GRID_HEIGHT; y++){
+                    matrixCopy[x][y] = matrix[x][y];
+                }
+            }
+        }
+
+        Element getCopy(int x, int y){
+            return *matrixCopy[x][y];
+        }
+
+        Element* getPtrCopy(int x, int y){
+            return matrixCopy[x][y];
+        }
+
+        bool isFullCopy(int x, int y){
+            return (bool) matrixCopy[x][y];
+        }
+
         void set(int x, int y, Element* elementPtr){
             matrix[x][y] = elementPtr;
         }
@@ -40,5 +61,9 @@ class Grid{
 
         bool isEmpty(int x, int y){
             return !isFull(x, y);
+        }
+
+        bool inBounds(int x, int y){
+            return x >= 0 && y >=0 && x < GRID_WIDTH && y < GRID_HEIGHT;
         }
 };

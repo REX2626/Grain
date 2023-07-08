@@ -30,6 +30,8 @@ void place_element(){
     int x = p_to_grid(xMouse);
     int y = p_to_grid(yMouse);
 
+    if (!grid.inBounds(x, y)){return;} // Only place element in bounds
+
     switch (selectedElement){
         case 0: // Stone
             grid.set(x, y, new Stone(x, y));
@@ -41,6 +43,15 @@ void place_element(){
             grid.set(x, y, new Water(x, y));
             break;
     }
+}
+
+void remove_element(){
+    int x = p_to_grid(xMouse);
+    int y = p_to_grid(yMouse);
+
+    if (!grid.inBounds(x, y)){return;} // Only remove element in bounds
+
+    grid.set(x, y, nullptr);
 }
 
 void draw(SDL_Renderer* renderer, double deltaTime){
@@ -62,11 +73,12 @@ void draw(SDL_Renderer* renderer, double deltaTime){
 }
 
 void update(double deltaTime){
+    grid.copy(); // Ensures elements can only be updated once
     // Looping through all elements in the grid array and updating each element
     for (int x = 0; x < GRID_WIDTH; x++){
         for (int y = GRID_HEIGHT-1; y >= 0; y--){ // From bottom to top
-            if (grid.isFull(x, y)){
-                (*grid.getPtr(x, y)).update(deltaTime); // Have to use pointer, as Element will force Element methods
+            if (grid.isFullCopy(x, y)){
+                (*grid.getPtrCopy(x, y)).update(deltaTime); // Have to use pointer, as Element will force Element methods
             }
         }
     }
@@ -149,7 +161,11 @@ int main(int argc, char* args[]){
         if (SDL_GetMouseState(&xMouse, &yMouse) & SDL_BUTTON_LEFT){
                 // Places the selected element at the mouse position
                 place_element();
-            }
+        }
+        // If right click held down, delete element at position
+        else if (SDL_GetMouseState(&xMouse, &yMouse) & SDL_BUTTON_X1){
+            remove_element();
+        }
 
         auto end = chrono::system_clock::now();
         chrono::duration<double> dt = end - start;
