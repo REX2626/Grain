@@ -18,6 +18,7 @@ Grid grid;
 
 
 int xMouse, yMouse;
+int placeSize = 0;
 
 int selectedElement = 0;
 
@@ -32,16 +33,27 @@ void place_element(){
 
     if (!grid.inBounds(x, y)){return;} // Only place element in bounds
 
-    switch (selectedElement){
-        case 0: // Stone
-            grid.set(x, y, new Stone(x, y));
-            break;
-        case 1: // Sand
-            grid.set(x, y, new Sand(x, y));
-            break;
-        case 2: // Water
-            grid.set(x, y, new Water(x, y));
-            break;
+    // Place a square of side length 2*placeSize + 1
+    for (int i = -placeSize; i <= placeSize; i++){
+        for (int j = -placeSize; j <= placeSize; j++){
+            switch (selectedElement){
+                case 0: // Stone
+                    if (grid.isEmpty(x + i, y + j) || grid.get(x + i, y + j).tag != "stone"){
+                        grid.set(x + i, y + j, new Stone(x + i, y + j));
+                    }
+                    break;
+                case 1: // Sand
+                    if (grid.isEmpty(x + i, y + j) || grid.get(x + i, y + j).tag != "sand"){
+                        grid.set(x + i, y + j, new Sand(x + i, y + j));
+                    }
+                    break;
+                case 2: // Water
+                    if (grid.isEmpty(x + i, y + j) || grid.get(x + i, y + j).tag != "water"){
+                        grid.set(x + i, y + j, new Water(x + i, y + j));
+                    }
+                    break;
+            }
+        }
     }
 }
 
@@ -153,6 +165,23 @@ int main(int argc, char* args[]){
                         selectedElement = 2;
                         break;
 
+                    case SDLK_r:
+                        grid.reset();
+                        break;
+
+                }
+            }
+
+            else if (event.type == SDL_MOUSEWHEEL){
+                if (event.wheel.y > 0){ // Scroll up
+                    if (placeSize < 5){
+                        placeSize++;
+                    }
+                }
+                else if (event.wheel.y < 0){ // Scroll down
+                    if (placeSize > 0){
+                        placeSize--;
+                    }
                 }
             }
         }

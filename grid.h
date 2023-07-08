@@ -12,6 +12,15 @@ class Grid{
             }
         }
 
+        void reset(){
+            for (int x = 0; x < GRID_WIDTH; x++){
+                for (int y = 0; y < GRID_HEIGHT; y++){
+                    matrix[x][y] = nullptr;
+                }
+            }
+            copy();
+        }
+
         Element getCopy(int x, int y){
             return *matrixCopy[x][y];
         }
