@@ -97,7 +97,7 @@ class ImmovableSolid: public Solid{
 class Water: public Liquid{
     public:
         Water(int x, int y): Liquid(x, y){
-            colour = {173, 216, 230};
+            colour = {(Uint8)(170 + rand() % 20), (Uint8)(210 + rand() % 20), (Uint8)(230 + rand() % 20)};
             tag = "water";
         }
 };
@@ -106,7 +106,7 @@ class Water: public Liquid{
 class Sand: public MovableSolid{
     public:
         Sand(int x, int y): MovableSolid(x, y){
-            colour = {255, 165, 0};
+            colour = {(Uint8)(225 + rand() % 20), (Uint8)(160 + rand() % 20), 0};
             tag = "sand";
         }
 };
@@ -115,7 +115,8 @@ class Sand: public MovableSolid{
 class Stone: public ImmovableSolid{
     public:
         Stone(int x, int y): ImmovableSolid(x, y){
-            colour = {96, 93, 90};
+            int random = rand() % 20;
+            colour = {(Uint8)(96 + random), (Uint8)(93 + random), (Uint8)(90 + random)};
             tag = "stone";
         }
 };
