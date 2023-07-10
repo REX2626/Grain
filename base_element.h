@@ -10,6 +10,7 @@ class Element{
         int y;
         SDL_Colour colour = {106, 13, 173}; // Purple (this should be overridden by child class)
         string tag = ""; // Used to differentiate elements
+        bool isFreefalling = true;
 
         Element(int x, int y): x(x), y(y){
 

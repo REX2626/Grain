@@ -52,6 +52,41 @@ class Grid{
             matrix[x][y]->setY(y);
         }
 
+        void moveTo(Element element, int x, int y){
+            int xPos = element.x;
+            int yPos = element.y;
+    
+            if (x == xPos){ // Moving vertically
+                int yDirection = 1;
+                if (y < yPos){yDirection = -1;}
+
+                for (int i = 0; i < abs(y - yPos); i++){
+                    if (!inBounds(xPos, yPos + yDirection) || isFull(xPos, yPos + yDirection)){break;}
+                    yPos += yDirection;
+                }
+
+            }else { // Not moving vertically
+                int xDirection = 1;
+                if (x < xPos){xDirection = -1;}
+
+                float gradient = (float)(y - yPos) / (float)(x - xPos);
+                
+                float startY = yPos;
+                float dx = abs(x - xPos);
+
+                for (int i = 1; i <= dx; i++){
+                    int newY = startY + round(i * gradient);
+                    if (!inBounds(xPos + xDirection, newY) || isFull(xPos + xDirection, newY)){break;}
+                    xPos += xDirection;
+                    yPos = newY;
+                }
+            }
+            
+            if (xPos != element.x || yPos != element.y){ // If the move positions have changed, move there
+                move(element, xPos, yPos);
+            }
+        }
+
         void swap(Element element, int x, int y){
             Element* swappedElement = getPtr(x, y);
             matrix[x][y] = matrix[element.x][element.y];

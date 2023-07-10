@@ -6,31 +6,37 @@ using namespace std;
 
 class Liquid: public Element{
     public:
+        int dispersion;
+
         Liquid(int x, int y): Element(x, y){
 
         }
 
         void update(double deltaTime){
+            if (!grid.inBounds(x, y+1)){
+                isFreefalling = false;
+            }
             // Falling
-            if (grid.inBounds(x, y+1) && grid.isEmpty(x, y+1)){
+            if (grid.inBounds(x, y+1) && (grid.isEmpty(x, y+1) || grid.get(x, y+1).isFreefalling)){
                 grid.move(*this, x, y+1);
             }
             // Moves sideways randomly
-            if (y+1 == GRID_HEIGHT || grid.isFull(x, y+1)){
+            else if (y+1 == GRID_HEIGHT || grid.isFull(x, y+1)){
+                isFreefalling = false;
                 if (rand() % 20 < 10){
                     if (grid.inBounds(x-1, y) && grid.isEmpty(x-1, y)){
-                        grid.move(*this, x-1, y);
+                        grid.moveTo(*this, x-dispersion, y);
                     }
                     else if (grid.inBounds(x+1, y) && grid.isEmpty(x+1, y)){
-                        grid.move(*this, x+1, y);
+                        grid.moveTo(*this, x+dispersion, y);
                     }
                 }
                 else{
                     if (grid.inBounds(x+1, y) && grid.isEmpty(x+1, y)){
-                        grid.move(*this, x+1, y);
+                        grid.moveTo(*this, x+dispersion, y);
                     }
                     else if (grid.inBounds(x-1, y) && grid.isEmpty(x-1, y)){
-                        grid.move(*this, x-1, y);
+                        grid.moveTo(*this, x-dispersion, y);
                     }
                 }
             }
@@ -55,16 +61,20 @@ class Gas: public Element{
 
 class MovableSolid: public Solid{
     public:
+
         MovableSolid(int x, int y): Solid(x, y){
 
         }
 
         void update(double deltaTime){
             // Return if at the bottom
-            if (!grid.inBounds(x, y+1)){return;}
+            if (!grid.inBounds(x, y+1)){
+                isFreefalling = false;
+                return;
+            }
 
             // Falling
-            if (grid.isEmpty(x, y+1)){
+            if (grid.isEmpty(x, y+1) || grid.get(x, y+1).isFreefalling){
                 grid.move(*this, x, y+1);
             }
             // Displaces water
@@ -73,6 +83,7 @@ class MovableSolid: public Solid{
             }
             // Moves diagonally
             else if (grid.isFull(x, y+1)){
+                isFreefalling = false;
                 if (grid.inBounds(x-1, y+1) && grid.isEmpty(x-1, y+1)){
                     grid.move(*this, x-1, y+1);
                 }
@@ -99,6 +110,7 @@ class Water: public Liquid{
         Water(int x, int y): Liquid(x, y){
             colour = {(Uint8)(170 + rand() % 20), (Uint8)(210 + rand() % 20), (Uint8)(230 + rand() % 20)};
             tag = "water";
+            dispersion = 3;
         }
 };
 

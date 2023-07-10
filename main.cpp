@@ -18,6 +18,7 @@ Grid grid;
 
 
 int xMouse, yMouse;
+int oldXMouse, oldYMouse;
 int placeSize = 0;
 
 int selectedElement = 0;
@@ -27,15 +28,13 @@ int p_to_grid(int x){
     return floor(x / GRID_SIZE);
 }
 
-void place_element(){
-    int x = p_to_grid(xMouse);
-    int y = p_to_grid(yMouse);
-
+void place_element(int x, int y){
     if (!grid.inBounds(x, y)){return;} // Only place element in bounds
 
     // Place a square of side length 2*placeSize + 1
     for (int i = -placeSize; i <= placeSize; i++){
         for (int j = -placeSize; j <= placeSize; j++){
+            if (!grid.inBounds(x + i, y + j)){return;}
             switch (selectedElement){
                 case 0: // Stone
                     if (grid.isEmpty(x + i, y + j) || grid.get(x + i, y + j).tag != "stone"){
@@ -54,6 +53,36 @@ void place_element(){
                     break;
             }
         }
+    }
+}
+
+void placeBetween(int startX, int startY, int endX, int endY){
+    int xDirection = 1;
+    if (endX < startX){xDirection = -1;}
+
+    int yDirection = 1;
+    if (endY < startY){yDirection = -1;}
+
+    if (endX == startX){ // Moving vertically
+        for (int i = 0; i <= abs(endY - startY); i++){
+            place_element(startX, startY + i * yDirection);
+        }
+
+    }else { // Not moving vertically
+        float gradient = (float)(endY - startY) / (float)(endX - startX);
+
+        if (abs(gradient) > 1){
+            gradient = 1 / gradient;
+            for (int i = 0; i <= abs(endY - startY); i++){
+                place_element(startX + round(i * gradient) * yDirection, startY + i * yDirection);
+            }
+        }
+        else{
+            for (int i = 0; i <= abs(endX - startX); i++){
+                place_element(startX + i * xDirection, startY + round(i * gradient) * xDirection);
+            }
+        }
+
     }
 }
 
@@ -169,6 +198,11 @@ int main(int argc, char* args[]){
                         grid.reset();
                         break;
 
+                    case SDLK_p:
+                        SDL_GetMouseState(&xMouse, &yMouse);
+                        place_element(p_to_grid(xMouse), p_to_grid(yMouse));
+                        break;
+
                 }
             }
 
@@ -189,12 +223,15 @@ int main(int argc, char* args[]){
         // Place element if left click held down, as well as update mouse position
         if (SDL_GetMouseState(&xMouse, &yMouse) & SDL_BUTTON_LEFT){
                 // Places the selected element at the mouse position
-                place_element();
+                placeBetween(p_to_grid(oldXMouse), p_to_grid(oldYMouse), p_to_grid(xMouse), p_to_grid(yMouse));
         }
         // If right click held down, delete element at position
         else if (SDL_GetMouseState(&xMouse, &yMouse) & SDL_BUTTON_X1){
             remove_element();
         }
+
+        oldXMouse = xMouse;
+        oldYMouse = yMouse;
 
         auto end = chrono::system_clock::now();
         chrono::duration<double> dt = end - start;
