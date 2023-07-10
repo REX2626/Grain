@@ -13,16 +13,12 @@ class Liquid: public Element{
         }
 
         void update(double deltaTime){
-            if (!grid.inBounds(x, y+1)){
-                isFreefalling = false;
-            }
             // Falling
-            if (grid.inBounds(x, y+1) && (grid.isEmpty(x, y+1) || grid.get(x, y+1).isFreefalling)){
+            if (grid.inBounds(x, y+1) && grid.isEmpty(x, y+1)){
                 grid.move(*this, x, y+1);
             }
             // Moves sideways randomly
             else if (y+1 == GRID_HEIGHT || grid.isFull(x, y+1)){
-                isFreefalling = false;
                 if (rand() % 20 < 10){
                     if (grid.inBounds(x-1, y) && grid.isEmpty(x-1, y)){
                         grid.moveTo(*this, x-dispersion, y);
@@ -68,13 +64,10 @@ class MovableSolid: public Solid{
 
         void update(double deltaTime){
             // Return if at the bottom
-            if (!grid.inBounds(x, y+1)){
-                isFreefalling = false;
-                return;
-            }
+            if (!grid.inBounds(x, y+1)){return;}
 
             // Falling
-            if (grid.isEmpty(x, y+1) || grid.get(x, y+1).isFreefalling){
+            if (grid.isEmpty(x, y+1)){
                 grid.move(*this, x, y+1);
             }
             // Displaces water
@@ -83,7 +76,6 @@ class MovableSolid: public Solid{
             }
             // Moves diagonally
             else if (grid.isFull(x, y+1)){
-                isFreefalling = false;
                 if (grid.inBounds(x-1, y+1) && grid.isEmpty(x-1, y+1)){
                     grid.move(*this, x-1, y+1);
                 }
