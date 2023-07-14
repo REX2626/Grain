@@ -25,7 +25,7 @@ int selectedElement = 0;
 
 // Pixel to grid square
 int p_to_grid(int x){
-    return floor(x / GRID_SIZE);
+    return x / GRID_SIZE;
 }
 
 void place_element(int x0, int y0){
