@@ -19,22 +19,13 @@ class Liquid: public Element{
             }
             // Moves sideways randomly
             else if (y+1 == GRID_HEIGHT || grid.isFull(x, y+1)){
+                int dir = 2*(rand()%2) - 1; // either -1 or +1
 
-                if (rand() % 2){ // 50% chance
-                    if (grid.inBounds(x-1, y) && grid.isEmpty(x-1, y)){
-                        grid.moveTo(*this, x-dispersion, y);
-                    }
-                    else if (grid.inBounds(x+1, y) && grid.isEmpty(x+1, y)){
-                        grid.moveTo(*this, x+dispersion, y);
-                    }
+                if (grid.inBounds(x + dir, y) && grid.isEmpty(x + dir, y)){
+                    grid.moveTo(*this, x + dir*dispersion, y);
                 }
-                else {
-                    if (grid.inBounds(x+1, y) && grid.isEmpty(x+1, y)){
-                        grid.moveTo(*this, x+dispersion, y);
-                    }
-                    else if (grid.inBounds(x-1, y) && grid.isEmpty(x-1, y)){
-                        grid.moveTo(*this, x-dispersion, y);
-                    }
+                else if (grid.inBounds(x - dir, y) && grid.isEmpty(x - dir, y)){
+                    grid.moveTo(*this, x - dir*dispersion, y);
                 }
             }
         }
@@ -108,21 +99,12 @@ class MovableSolid: public Solid{
                 }
                 // Moves diagonally randomly
                 else if (freeFalling && grid.isFull(x, y+1)){
-                    if (rand() % 2){ // 50% chance
-                        if (grid.inBounds(x-1, y+1) && grid.isEmpty(x-1, y+1)){
-                            grid.move(*this, x-1, y+1);
-                        }
-                        else if (grid.inBounds(x+1, y+1) && grid.isEmpty(x+1, y+1)){
-                            grid.move(*this, x+1, y+1);
-                        }
+                    int dir = 2*(rand()%2)-1; // -1 or +1
+                    if (grid.inBounds(x + dir, y+1) && grid.isEmpty(x + dir, y+1)){
+                        grid.move(*this, x + dir, y+1);
                     }
-                    else {
-                        if (grid.inBounds(x+1, y+1) && grid.isEmpty(x+1, y+1)){
-                            grid.move(*this, x+1, y+1);
-                        }
-                        else if (grid.inBounds(x-1, y+1) && grid.isEmpty(x-1, y+1)){
-                            grid.move(*this, x-1, y+1);
-                        }
+                    else if (grid.inBounds(x - dir, y+1) && grid.isEmpty(x - dir, y+1)){
+                        grid.move(*this, x - dir, y+1);
                     }
                 }
             }
