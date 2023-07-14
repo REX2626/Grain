@@ -34,7 +34,7 @@ void place_element(int x, int y){
     // Place a square of side length 2*placeSize + 1
     for (int i = -placeSize; i <= placeSize; i++){
         for (int j = -placeSize; j <= placeSize; j++){
-            if (!grid.inBounds(x + i, y + j)){return;}
+            if (!grid.inBounds(x + i, y + j)){continue;}
             switch (selectedElement){
                 case 0: // Stone
                     if (grid.isEmpty(x + i, y + j) || grid.get(x + i, y + j).tag != "stone"){
@@ -49,6 +49,16 @@ void place_element(int x, int y){
                 case 2: // Water
                     if (grid.isEmpty(x + i, y + j) || grid.get(x + i, y + j).tag != "water"){
                         grid.set(x + i, y + j, new Water(x + i, y + j));
+                    }
+                    break;
+                case 3: // Dirt
+                    if (grid.isEmpty(x + i, y + j) || grid.get(x + i, y + j).tag != "dirt"){
+                        grid.set(x + i, y + j, new Dirt(x + i, y + j));
+                    }
+                    break;
+                case 4: // Coal
+                    if (grid.isEmpty(x + i, y + j) || grid.get(x + i, y + j).tag != "coal"){
+                        grid.set(x + i, y + j, new Coal(x + i, y + j));
                     }
                     break;
             }
@@ -192,6 +202,14 @@ int main(int argc, char* args[]){
 
                     case SDLK_3:
                         selectedElement = 2;
+                        break;
+
+                    case SDLK_4:
+                        selectedElement = 3;
+                        break;
+
+                    case SDLK_5:
+                        selectedElement = 4;
                         break;
 
                     case SDLK_r:

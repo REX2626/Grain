@@ -10,7 +10,6 @@ class Element{
         int y;
         SDL_Colour colour = {106, 13, 173}; // Purple (this should be overridden by child class)
         string tag = ""; // Used to differentiate elements
-        bool isFreefalling = true;
 
         Element(int x, int y): x(x), y(y){
 
@@ -35,6 +34,8 @@ class Element{
         virtual void update(double deltaTime){ // virtual means this function can be overridden by child class
 
         }
+
+        virtual void setFreeFalling(){}
 
         void print(){
             cout << "Element of x: " << x << " y: " << y << "\n";

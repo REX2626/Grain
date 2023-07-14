@@ -55,7 +55,7 @@ class Grid{
         void moveTo(Element element, int x, int y){
             int xPos = element.x;
             int yPos = element.y;
-    
+
             if (x == xPos){ // Moving vertically
                 int yDirection = 1;
                 if (y < yPos){yDirection = -1;}
@@ -65,12 +65,13 @@ class Grid{
                     yPos += yDirection;
                 }
 
-            }else { // Not moving vertically
+            }
+            else { // Not moving vertically
                 int xDirection = 1;
                 if (x < xPos){xDirection = -1;}
 
                 float gradient = (float)(y - yPos) / (float)(x - xPos);
-                
+
                 float startY = yPos;
                 float dx = abs(x - xPos);
 
@@ -81,7 +82,7 @@ class Grid{
                     yPos = newY;
                 }
             }
-            
+
             if (xPos != element.x || yPos != element.y){ // If the move positions have changed, move there
                 move(element, xPos, yPos);
             }
