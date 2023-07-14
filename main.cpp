@@ -9,6 +9,7 @@ using namespace std;
 const int FPS = 60;
 const int WIDTH = 1000, HEIGHT = 600;
 const int GRID_SIZE = 1;
+const int MAX_PLACE_SIZE = 10;
 const int GRID_WIDTH = WIDTH / GRID_SIZE, GRID_HEIGHT = HEIGHT / GRID_SIZE;
 
 #include "base_element.h"
