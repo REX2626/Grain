@@ -227,15 +227,10 @@ int main(int argc, char* args[]){
 
             else if (event.type == SDL_MOUSEWHEEL){
                 if (event.wheel.y > 0){ // Scroll up
-<<<<<<< HEAD
-                    if (placeSize < 10){
-=======
                     if (placeSize < MAX_PLACE_SIZE){
->>>>>>> 30ac6d1637fa097dd1d22b4875c69a8a63aced3a
                         placeSize++;
                     }
-                }
-                else if (event.wheel.y < 0){ // Scroll down
+                } else if (event.wheel.y < 0){ // Scroll down
                     if (placeSize > 0){
                         placeSize--;
                     }
