@@ -28,41 +28,27 @@ int p_to_grid(int x){
     return floor(x / GRID_SIZE);
 }
 
-void place_element(int x, int y){
-    if (!grid.inBounds(x, y)){return;} // Only place element in bounds
+void place_element(int x0, int y0){
+    if (!grid.inBounds(x0, y0)){return;} // Only place element in bounds
 
-    // Place a square of side length 2*placeSize + 1
-    for (int i = -placeSize; i <= placeSize; i++){
-        for (int j = -placeSize; j <= placeSize; j++){
-            if (!grid.inBounds(x + i, y + j)){continue;}
-            switch (selectedElement){
-                case 0: // Stone
-                    if (grid.isEmpty(x + i, y + j) || grid.get(x + i, y + j).tag != "stone"){
-                        grid.set(x + i, y + j, new Stone(x + i, y + j));
-                    }
-                    break;
-                case 1: // Sand
-                    if (grid.isEmpty(x + i, y + j) || grid.get(x + i, y + j).tag != "sand"){
-                        grid.set(x + i, y + j, new Sand(x + i, y + j));
-                    }
-                    break;
-                case 2: // Water
-                    if (grid.isEmpty(x + i, y + j) || grid.get(x + i, y + j).tag != "water"){
-                        grid.set(x + i, y + j, new Water(x + i, y + j));
-                    }
-                    break;
-                case 3: // Dirt
-                    if (grid.isEmpty(x + i, y + j) || grid.get(x + i, y + j).tag != "dirt"){
-                        grid.set(x + i, y + j, new Dirt(x + i, y + j));
-                    }
-                    break;
-                case 4: // Coal
-                    if (grid.isEmpty(x + i, y + j) || grid.get(x + i, y + j).tag != "coal"){
-                        grid.set(x + i, y + j, new Coal(x + i, y + j));
-                    }
-                    break;
-            }
+    int dx, dy, x, y;
+    Element *placedElement;
+    for (dx=-placeSize; dx<=placeSize; ++dx) // place inside circle, radius ~placeSize
+    for (dy=-placeSize; dy<=placeSize; ++dy) {
+        x = x0 + dx;
+        y = y0 + dy;
+        if (!grid.inBounds(x, y)) {continue;}
+        if (dx*dx + dy*dy > placeSize*placeSize + 1) {continue;} // dont place if outside circle around cursor
+
+        switch (selectedElement) {
+            case 0: placedElement = new Stone(x, y); break;
+            case 1: placedElement = new Sand(x, y); break;
+            case 2: placedElement = new Water(x, y); break;
+            case 3: placedElement = new Dirt(x, y); break;
+            case 4: placedElement = new Coal(x, y); break;
         }
+        if (!(grid.isEmpty(x, y) || grid.get(x, y).tag != placedElement->tag)) {continue;} // dont overwrite same element
+        grid.set(x, y, placedElement);
     }
 }
 
@@ -96,13 +82,19 @@ void placeBetween(int startX, int startY, int endX, int endY){
     }
 }
 
-void remove_element(){
-    int x = p_to_grid(xMouse);
-    int y = p_to_grid(yMouse);
+void remove_element() {
+    int x0 = p_to_grid(xMouse);
+    int y0 = p_to_grid(yMouse);
 
-    if (!grid.inBounds(x, y)){return;} // Only remove element in bounds
-
-    grid.set(x, y, nullptr);
+    int dx, dy, x, y;
+    for (dx=-placeSize; dx<=placeSize; ++dx)
+    for (dy=-placeSize; dy<=placeSize; ++dy) {
+        x = x0 + dx;
+        y = y0 + dy;
+        if (!grid.inBounds(x, y)) {continue;} // Only remove element in bounds
+        if ((dx*dx) + (dy*dy) > placeSize*placeSize + 1) {continue;} // Only remove element inside circle around cursor
+        grid.set(x, y, nullptr);
+    }
 }
 
 void draw(SDL_Renderer* renderer, double deltaTime){
