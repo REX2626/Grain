@@ -45,16 +45,16 @@ class Grid{
             return matrix[x][y];
         }
 
-        void move(Element element, int x, int y){
-            matrix[x][y] = matrix[element.x][element.y];
-            matrix[element.x][element.y] = nullptr;
+        void move(Element *element, int x, int y){
+            matrix[x][y] = matrix[element->x][element->y];
+            matrix[element->x][element->y] = nullptr;
             matrix[x][y]->setX(x);
             matrix[x][y]->setY(y);
         }
 
-        void moveTo(Element element, int x, int y){
-            int xPos = element.x;
-            int yPos = element.y;
+        void moveTo(Element *element, int x, int y){
+            int xPos = element->x;
+            int yPos = element->y;
 
             if (x == xPos){ // Moving vertically
                 int yDirection = 1;
@@ -83,18 +83,18 @@ class Grid{
                 }
             }
 
-            if (xPos != element.x || yPos != element.y){ // If the move positions have changed, move there
+            if (xPos != element->x || yPos != element->y){ // If the move positions have changed, move there
                 move(element, xPos, yPos);
             }
         }
 
-        void swap(Element element, int x, int y){
+        void swap(Element *element, int x, int y){
             Element* swappedElement = getPtr(x, y);
-            matrix[x][y] = matrix[element.x][element.y];
-            matrix[element.x][element.y] = swappedElement;
+            matrix[x][y] = matrix[element->x][element->y];
+            matrix[element->x][element->y] = swappedElement;
 
-            matrix[element.x][element.y]->setX(element.x);
-            matrix[element.x][element.y]->setY(element.y);
+            matrix[element->x][element->y]->setX(element->x);
+            matrix[element->x][element->y]->setY(element->y);
 
             matrix[x][y]->setX(x);
             matrix[x][y]->setY(y);
