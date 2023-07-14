@@ -8,8 +8,7 @@ using namespace std;
 
 const int FPS = 60;
 const int WIDTH = 1000, HEIGHT = 600;
-const int GRID_SIZE = 5;
-const int MAX_PLACE_SIZE = 10;
+const int GRID_SIZE = 1;
 const int GRID_WIDTH = WIDTH / GRID_SIZE, GRID_HEIGHT = HEIGHT / GRID_SIZE;
 
 #include "base_element.h"
@@ -26,7 +25,7 @@ int selectedElement = 0;
 
 // Pixel to grid square
 int p_to_grid(int x){
-    return floor(x / GRID_SIZE);
+    return x / GRID_SIZE;
 }
 
 void place_element(int x0, int y0){

@@ -15,17 +15,17 @@ class Liquid: public Element{
         void update(double deltaTime){
             // Falling
             if (grid.inBounds(x, y+1) && grid.isEmpty(x, y+1)){
-                grid.move(*this, x, y+1);
+                grid.move(this, x, y+1);
             }
             // Moves sideways randomly
             else if (y+1 == GRID_HEIGHT || grid.isFull(x, y+1)){
                 int dir = 2*(rand()%2) - 1; // either -1 or +1
 
                 if (grid.inBounds(x + dir, y) && grid.isEmpty(x + dir, y)){
-                    grid.moveTo(*this, x + dir*dispersion, y);
+                    grid.moveTo(this, x + dir*dispersion, y);
                 }
                 else if (grid.inBounds(x - dir, y) && grid.isEmpty(x - dir, y)){
-                    grid.moveTo(*this, x - dir*dispersion, y);
+                    grid.moveTo(this, x - dir*dispersion, y);
                 }
             }
         }
@@ -70,7 +70,7 @@ class MovableSolid: public Solid{
             if (velX > 0){
                 // Move right if cell is empty
                 if (grid.inBounds(x+1, y) && grid.isEmpty(x+1, y)){
-                    grid.move(*this, x+1, y);
+                    grid.move(this, x+1, y);
                 }
                 else {
                     velX = 0;
@@ -79,7 +79,7 @@ class MovableSolid: public Solid{
             else if (velX < 0){
                 // Move left if cell is empty
                 if (grid.inBounds(x-1, y) && grid.isEmpty(x-1, y)){
-                    grid.move(*this, x-1, y);
+                    grid.move(this, x-1, y);
                 }
                 else {
                     velX = 0;
@@ -90,21 +90,21 @@ class MovableSolid: public Solid{
             if (grid.inBounds(x, y+1)){
                 // Falling
                 if (grid.isEmpty(x, y+1)){
-                    grid.move(*this, x, y+1);
+                    grid.move(this, x, y+1);
                     setAdjacentFreeFalling();
                 }
                 // Displaces water
                 else if (grid.get(x, y+1).tag == "water"){
-                    grid.swap(*this, x, y+1);
+                    grid.swap(this, x, y+1);
                 }
                 // Moves diagonally randomly
                 else if (freeFalling && grid.isFull(x, y+1)){
                     int dir = 2*(rand()%2)-1; // -1 or +1
                     if (grid.inBounds(x + dir, y+1) && grid.isEmpty(x + dir, y+1)){
-                        grid.move(*this, x + dir, y+1);
+                        grid.move(this, x + dir, y+1);
                     }
                     else if (grid.inBounds(x - dir, y+1) && grid.isEmpty(x - dir, y+1)){
-                        grid.move(*this, x - dir, y+1);
+                        grid.move(this, x - dir, y+1);
                     }
                 }
             }
