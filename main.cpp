@@ -8,7 +8,8 @@ using namespace std;
 
 const int FPS = 60;
 const int WIDTH = 1000, HEIGHT = 600;
-const int GRID_SIZE = 8;
+const int GRID_SIZE = 5;
+const int MAX_PLACE_SIZE = 10;
 const int GRID_WIDTH = WIDTH / GRID_SIZE, GRID_HEIGHT = HEIGHT / GRID_SIZE;
 
 #include "base_element.h"
@@ -47,7 +48,7 @@ void place_element(int x0, int y0){
             case 3: placedElement = new Dirt(x, y); break;
             case 4: placedElement = new Coal(x, y); break;
         }
-        if (!(grid.isEmpty(x, y) || grid.get(x, y).tag != placedElement->tag)) {continue;} // dont overwrite same element
+        if (grid.isFull(x, y) && grid.get(x, y).tag == placedElement->tag) {continue;} // don't overwrite same element
         grid.set(x, y, placedElement);
     }
 }
@@ -204,6 +205,14 @@ int main(int argc, char* args[]){
                         selectedElement = 4;
                         break;
 
+                    case SDLK_UP:
+                        if (placeSize < MAX_PLACE_SIZE){placeSize++;}
+                        break;
+
+                    case SDLK_DOWN:
+                        if (placeSize > 0){placeSize--;}
+                        break;
+
                     case SDLK_r:
                         grid.reset();
                         break;
@@ -218,7 +227,7 @@ int main(int argc, char* args[]){
 
             else if (event.type == SDL_MOUSEWHEEL){
                 if (event.wheel.y > 0){ // Scroll up
-                    if (placeSize < 5){
+                    if (placeSize < MAX_PLACE_SIZE){
                         placeSize++;
                     }
                 }
