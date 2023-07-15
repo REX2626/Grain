@@ -99,6 +99,20 @@ void remove_element() {
     }
 }
 
+void igniteInRange(int x0, int y0) {
+    int dx, dy, x, y;
+    for (dx=-placeSize; dx<=placeSize; ++dx)
+    for (dy=-placeSize; dy<=placeSize; ++dy) {
+        x = x0 + dx;
+        y = y0 + dy;
+        if (!grid.inBounds(x, y)) {continue;} // Only ignite element in bounds
+        if (grid.isEmpty(x, y)) {continue;}
+        if (!grid.getPtr(x, y)->canBeSetOnFire) {continue;}
+        if ((dx*dx) + (dy*dy) > placeSize*placeSize + 1) {continue;} // Only ignite element inside circle around cursor
+        grid.getPtr(x, y)->setOnFire();
+    }
+}
+
 void draw(SDL_Renderer* renderer, double deltaTime){
     // Colours background black
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
@@ -246,6 +260,11 @@ int main(int argc, char* args[]){
                     case SDLK_p:
                         SDL_GetMouseState(&xMouse, &yMouse);
                         place_element(p_to_grid(xMouse), p_to_grid(yMouse));
+                        break;
+
+                    case SDLK_f:
+                        SDL_GetMouseState(&xMouse, &yMouse);
+                        igniteInRange(p_to_grid(xMouse), p_to_grid(yMouse));
                         break;
 
                 }

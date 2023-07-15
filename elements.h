@@ -34,8 +34,36 @@ class Liquid: public Element{
 
 class Solid: public Element{
     public:
-        Solid(int x, int y): Element(x, y){
+        bool onFire;
+        int fireTicks; // child should override
+        SDL_Colour baseColour;
 
+        Solid(int x, int y): Element(x, y){
+        }
+
+        void initSolid() {
+            onFire = false;
+            colour = baseColour;
+            canBeSetOnFire = true;
+        }
+
+        void setOnFire() {
+            if (onFire) {return;}
+            onFire = true;
+        }
+
+        void putOutFire() {
+            if (!onFire) {return;}
+            onFire = false;
+            colour = baseColour;
+        }
+
+        void updateFire() {
+            if (onFire) {
+                colour.r = (Uint8)(200 + rand()%40);
+                colour.g = (Uint8)(rand()%255);
+                colour.b = (Uint8)(rand()%10);
+            }
         }
 };
 
@@ -70,10 +98,15 @@ class MovableSolid: public Solid{
         int velX = 0;
 
         MovableSolid(int x, int y): Solid(x, y), prevX(x), prevY(y){
-
+            initSolid();
         }
 
-        void update(double deltaTime){
+        void update(double deltaTime) {
+            updateFire();
+            movableUpdate(deltaTime);
+        }
+
+        void movableUpdate(double deltaTime){
             prevX = x;
             prevY = y;
             velX *= max(0.0, 1 - deltaTime*friction); // decrease velX proportional to friction
@@ -157,7 +190,11 @@ class MovableSolid: public Solid{
 class ImmovableSolid: public Solid{
     public:
         ImmovableSolid(int x, int y): Solid(x, y){
+            initSolid();
+        }
 
+        void update(double deltaTime) {
+            updateFire();
         }
 };
 
@@ -177,20 +214,22 @@ class Water: public Liquid{
 class Sand: public MovableSolid{
     public:
         Sand(int x, int y): MovableSolid(x, y){
-            colour = {(Uint8)(225 + rand() % 20), (Uint8)(160 + rand() % 20), 0};
+            baseColour = {(Uint8)(225 + rand() % 20), (Uint8)(160 + rand() % 20), 0};
             tag = "sand";
             inertialResistance = 0.1;
             friction = 40;
+            initSolid();
         }
 };
 
 class Dirt: public MovableSolid{
     public:
         Dirt(int x, int y): MovableSolid(x, y){
-            colour = {(Uint8)(100 + rand() % 20), (Uint8)(50 + rand() % 10), 0};
+            baseColour = {(Uint8)(100 + rand() % 20), (Uint8)(50 + rand() % 10), 0};
             tag = "dirt";
             inertialResistance = 0.9;
             friction = 2000;
+            initSolid();
         }
 };
 
@@ -198,10 +237,11 @@ class Coal: public MovableSolid{
     public:
         Coal(int x, int y): MovableSolid(x, y){
             int random = rand() % 15;
-            colour = {(Uint8)(30 + random), (Uint8)(34 + random), (Uint8)(32 + random)};
+            baseColour = {(Uint8)(30 + random), (Uint8)(34 + random), (Uint8)(32 + random)};
             tag = "coal";
             inertialResistance = 0.8;
             friction = 1000;
+            initSolid();
         }
 };
 
@@ -210,8 +250,9 @@ class Stone: public ImmovableSolid{
     public:
         Stone(int x, int y): ImmovableSolid(x, y){
             int random = rand() % 20;
-            colour = {(Uint8)(96 + random), (Uint8)(93 + random), (Uint8)(90 + random)};
+            baseColour = {(Uint8)(96 + random), (Uint8)(93 + random), (Uint8)(90 + random)};
             tag = "stone";
+            initSolid();
         }
 };
 
