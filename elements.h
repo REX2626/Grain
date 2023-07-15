@@ -41,7 +41,19 @@ class Solid: public Element{
 
 
 class Gas: public Element{
+    public:
+        int velX = 0;
+        int velY = 0;
 
+        Gas(int x, int y): Element(x, y){
+
+        }
+
+        void update(double deltaTime){
+            velX = rand() % 11 - 5;
+            velY = rand() % 10 - 8;
+            grid.moveTo(this, x + velX, y + velY);
+        }
 };
 
 
@@ -205,5 +217,10 @@ class Stone: public ImmovableSolid{
 
 
 class Smoke: public Gas{
-
+    public:
+        Smoke(int x, int y): Gas(x, y){
+            int random = rand() % 20;
+            colour = {(Uint8)(200 + random), (Uint8)(200 + random), (Uint8)(200 + random)};
+            tag = "smoke";
+        }
 };
