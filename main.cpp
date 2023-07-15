@@ -8,7 +8,7 @@ using namespace std;
 
 const int FPS = 60;
 const int WIDTH = 1000, HEIGHT = 600;
-const int GRID_SIZE = 1;
+const int GRID_SIZE = 8;
 const int MAX_PLACE_SIZE = 10;
 const int GRID_WIDTH = WIDTH / GRID_SIZE, GRID_HEIGHT = HEIGHT / GRID_SIZE;
 
@@ -117,13 +117,25 @@ void draw(SDL_Renderer* renderer, double deltaTime){
 }
 
 void update(double deltaTime){
-    grid.copy(); // Ensures elements can only be updated once
+    // grid.copy(); // Ensures elements can only be updated once
     // Looping through all elements in the grid array and updating each element
-    for (int x = 0; x < GRID_WIDTH; x++){
-        for (int y = GRID_HEIGHT-1; y >= 0; y--){ // From bottom to top
-            if (grid.isFullCopy(x, y)){
-                (*grid.getPtrCopy(x, y)).update(deltaTime); // Have to use pointer, as Element will force Element methods
+    int x, y;
+    for (y=0; y<GRID_HEIGHT; ++y)
+    for (x=0; x<GRID_WIDTH; ++x) {
+        if (grid.isEmpty(x, y)) {continue;}
+        grid.getPtr(x, y)->updated = false;
+
+    }
+    Element *elem;
+    for (x = 0; x < GRID_WIDTH; x++) {
+        for (y = GRID_HEIGHT-1; y >= 0; y--) { // From bottom to top
+            if (grid.isEmpty(x, y)) {continue;}
+            elem = grid.getPtr(x, y);
+            if (elem->updated) {
+                continue;
             }
+            elem->update(deltaTime);
+            elem->updated = true;
         }
     }
 }

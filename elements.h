@@ -127,8 +127,8 @@ class MovableSolid: public Solid{
 
         void setAdjacentFreeFalling(){
             // Call setFreeFalling on the left and right cells
-            if (grid.inBounds(x-1, y) && grid.isFull(x-1, y)){(*grid.getPtr(x-1, y)).setFreeFalling();}
-            if (grid.inBounds(x+1, y) && grid.isFull(x+1, y)){(*grid.getPtr(x+1, y)).setFreeFalling();}
+            if (grid.inBounds(x-1, y) && grid.isFull(x-1, y)) {grid.getPtr(x-1, y)->setFreeFalling();}
+            if (grid.inBounds(x+1, y) && grid.isFull(x+1, y)) {grid.getPtr(x+1, y)->setFreeFalling();}
         }
 
         void setFreeFalling(){
