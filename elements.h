@@ -34,11 +34,11 @@ class Liquid: public Element{
 
 class Solid: public Element{
     public:
-        bool onFire;
         int fireTicks = 50; // child should override
         SDL_Colour baseColour;
         float fireResistance = 0.95; // higher is more resistant
         float fireDiffusivity = 0.10; // higher is more spread-y
+        
         int fireSpreadRange = 2;
 
         Solid(int x, int y): Element(x, y){

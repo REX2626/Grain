@@ -11,6 +11,8 @@ class Element{
         SDL_Colour colour = {106, 13, 173}; // Purple (this should be overridden by child class)
         string tag = ""; // Used to differentiate elements
         bool updated = false;
+        bool onFire = false;
+        float fireSmokiness = 0.02; // higher is more smoky
 
         Element(int x, int y): x(x), y(y){
         }

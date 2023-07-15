@@ -162,6 +162,27 @@ void update(double deltaTime){
             elem->updated = true;
         }
     }
+
+    // create smoke, yes this is in the wrong place
+    // but smoke isnt defined yet in the other place
+    // because we put our stuff in .h files soooo
+    // produce smoke
+    for (x=0; x < GRID_WIDTH; ++x) {
+        for (y = GRID_HEIGHT-1; y >= 0; y--) { // From bottom to top
+            if (grid.isEmpty(x, y)) {continue;}
+            elem = grid.getPtr(x, y);
+            if (elem->tag == "smoke") {continue;}
+            if (!elem->canBeSetOnFire()) {continue;}
+            if (!elem->onFire) {continue;}
+            if ((float)rand()/RAND_MAX <= elem->fireSmokiness) {
+                int dx = rand()%2 * 2 - 1; // either -1 or +1
+                int dy = rand()%2 * 2 - 1; // either -1 or +1
+                if (grid.isEmpty(x+dx, y+dy)) {
+                    grid.set(x+dx, y+dy, new Smoke(x+dx, y+dy));
+                }
+            }
+        }
+    }
 }
 
 int main(int argc, char* args[]){
