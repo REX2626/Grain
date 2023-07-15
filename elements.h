@@ -168,7 +168,7 @@ class Sand: public MovableSolid{
             colour = {(Uint8)(225 + rand() % 20), (Uint8)(160 + rand() % 20), 0};
             tag = "sand";
             inertialResistance = 0.1;
-            friction = 60;
+            friction = 40;
         }
 };
 
@@ -188,8 +188,8 @@ class Coal: public MovableSolid{
             int random = rand() % 15;
             colour = {(Uint8)(30 + random), (Uint8)(34 + random), (Uint8)(32 + random)};
             tag = "coal";
-            inertialResistance = 0.0;
-            friction = 150;
+            inertialResistance = 0.8;
+            friction = 1000;
         }
 };
 
