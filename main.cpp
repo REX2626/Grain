@@ -23,6 +23,7 @@ int oldXMouse, oldYMouse;
 int placeSize = 0;
 
 int selectedElement = 0;
+bool heatmapEnabled = false;
 
 // Pixel to grid square
 int p_to_grid(int x){
@@ -47,7 +48,8 @@ void place_element(int x0, int y0){
             case 2: placedElement = new Water(x, y); break;
             case 3: placedElement = new Dirt(x, y); break;
             case 4: placedElement = new Coal(x, y); break;
-            case 5: placedElement = new Smoke(x, y); break;
+            case 5: placedElement = new Wood(x, y); break;
+            case 6: placedElement = new Smoke(x, y); break;
         }
         if (grid.isFull(x, y) && grid.getPtr(x, y)->tag == placedElement->tag) {continue;} // don't overwrite same element
         grid.set(x, y, placedElement);
@@ -122,7 +124,7 @@ void draw(SDL_Renderer* renderer, double deltaTime){
     for (int x = 0; x < GRID_WIDTH; x++){
         for (int y = 0; y < GRID_HEIGHT; y++){
             if (grid.isFull(x, y)){
-                grid.getPtr(x, y)->render(renderer, GRID_SIZE);
+                grid.getPtr(x, y)->render(renderer, GRID_SIZE, heatmapEnabled);
             }
         }
     }
@@ -177,6 +179,7 @@ void update(double deltaTime){
             if ((float)rand()/RAND_MAX <= elem->fireSmokiness) {
                 int dx = rand()%2 * 2 - 1; // either -1 or +1
                 int dy = rand()%2 * 2 - 1; // either -1 or +1
+                if (!grid.inBounds(x+dx, y+dy)) {continue;}
                 if (grid.isEmpty(x+dx, y+dy)) {
                     grid.set(x+dx, y+dy, new Smoke(x+dx, y+dy));
                 }
@@ -264,6 +267,14 @@ int main(int argc, char* args[]){
 
                     case SDLK_6:
                         selectedElement = 5;
+                        break;
+
+                    case SDLK_7:
+                        selectedElement = 6;
+                        break;
+
+                    case SDLK_h:
+                        heatmapEnabled = !heatmapEnabled;
                         break;
 
                     case SDLK_UP:

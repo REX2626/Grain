@@ -4,6 +4,25 @@ using namespace std;
 
 // STATES
 
+void updateTemp(Element *e) {
+    int x = e->x;
+    int y = e->y;
+    int dx, dy;
+    float weightedTempDiff = 0.0;
+    float neighTemp;
+    for (dx=-1; dx<=1; dx+=2) // loop thru 4 neighbours
+    for (dy=-1; dy<=1; dy+=2) {
+        if (!grid.inBounds(x+dx, y+dy)) {continue;}
+        if (grid.isEmpty(x+dx, y+dy)) {
+            weightedTempDiff += - AIR_THERM_CONDUCTIVITY * e->temperature;
+            continue;
+        }
+        neighTemp = grid.getPtr(x+dx, y+dy)->temperature;
+        weightedTempDiff += grid.getPtr(x+dx, y+dy)->thermalConductivity * (neighTemp - e->temperature);
+    }
+    e->temperature += weightedTempDiff/6; // div by 6 to ensure cant have temp overflow
+}
+
 class Liquid: public Element{
     public:
         int dispersion;
@@ -28,6 +47,8 @@ class Liquid: public Element{
                     grid.moveTo(this, x - dir*dispersion, y);
                 }
             }
+
+            updateTemp(this);
         }
 };
 
@@ -53,6 +74,7 @@ class Solid: public Element{
 
         void ignite() {
             if (onFire) {return;}
+            temperature = max((float)150.0, temperature);
             onFire = true;
         }
 
@@ -69,7 +91,19 @@ class Solid: public Element{
         }
 
         void updateFire() {
+            if (temperature > igniteTemp) {
+                ignite();
+            }
+            
             if (!onFire) {return;}
+
+            if (temperature < igniteTemp - 1) {
+                putOutFire();
+                return;
+            }
+
+            // increase temperature
+            temperature += 1;
 
             // reduce fire ticks destroy self if so
             fireTicks --;
@@ -83,15 +117,15 @@ class Solid: public Element{
             colour.g = (Uint8)(rand()%255);
             colour.b = (Uint8)(rand()%10);
             
-            // spread to neighbours by chance
-            if ((float)rand()/RAND_MAX > fireDiffusivity) {return;}
-            // pick a random neighbour
-            int dx = rand()%(fireSpreadRange*2+1) - fireSpreadRange; // has the effect of being in the range [-fireSpreadRange, fireSpreadRange] (incl. 0)
-            int dy = rand()%(fireSpreadRange*2+1) - fireSpreadRange;
-            if (dx == 0 && dy == 0) {return;}
-            if (grid.isEmpty(x+dx, y+dy)) {return;}
-            if (!grid.getPtr(x+dx, y+dy)->canBeSetOnFire()) {return;}
-            grid.getPtr(x+dx, y+dy)->attemptSetOnFire();
+            // // spread to neighbours by chance
+            // if ((float)rand()/RAND_MAX > fireDiffusivity) {return;}
+            // // pick a random neighbour
+            // int dx = rand()%(fireSpreadRange*2+1) - fireSpreadRange; // has the effect of being in the range [-fireSpreadRange, fireSpreadRange] (incl. 0)
+            // int dy = rand()%(fireSpreadRange*2+1) - fireSpreadRange;
+            // if (dx == 0 && dy == 0) {return;}
+            // if (grid.isEmpty(x+dx, y+dy)) {return;}
+            // if (!grid.getPtr(x+dx, y+dy)->canBeSetOnFire()) {return;}
+            // // grid.getPtr(x+dx, y+dy)->attemptSetOnFire();
         }
 };
 
@@ -129,6 +163,8 @@ class Gas: public Element{
             colour.r = baseColour.r - 5 * neighbours;
             colour.g = baseColour.g - 5 * neighbours;
             colour.b = baseColour.b - 5 * neighbours;
+
+            updateTemp(this);
         }
 };
 
@@ -151,6 +187,7 @@ class MovableSolid: public Solid{
 
         void update(double deltaTime) {
             movableUpdate(deltaTime);
+            updateTemp(this);
             updateFire();
         }
 
@@ -242,6 +279,7 @@ class ImmovableSolid: public Solid{
         }
 
         void update(double deltaTime) {
+            updateTemp(this);
             updateFire();
         }
 };
@@ -316,6 +354,20 @@ class Stone: public ImmovableSolid{
         }
 };
 
+class Wood: public ImmovableSolid {
+    public:
+    Wood(int x, int y): ImmovableSolid(x, y) {
+        int random = rand()%20 - 10;
+        baseColour = {(Uint8)(100+random), (Uint8)(75+random), (Uint8)(50+random)};
+        tag = "wood";
+        fireResistance = 0.30;
+        fireDiffusivity = 0.20;
+        fireTicks = 150 + rand()%50;
+        fireSpreadRange = 3;
+        initSolid();
+    }
+};
+
 
 class Smoke: public Gas{
     public:
@@ -324,5 +376,6 @@ class Smoke: public Gas{
             baseColour = {(Uint8)(200 + random), (Uint8)(200 + random), (Uint8)(200 + random)};
             tag = "smoke";
             density = 6;
+            temperature = 100; // https://www.google.com/search?q=temperature+of+smoke+degrees+c
         }
 };
