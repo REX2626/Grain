@@ -35,9 +35,11 @@ class Liquid: public Element{
 class Solid: public Element{
     public:
         bool onFire;
-        int fireTicks; // child should override
+        int fireTicks = 50; // child should override
         SDL_Colour baseColour;
-        float fireResistance;
+        float fireResistance = 0.95; // higher is more resistant
+        float fireDiffusivity = 0.10; // higher is more spread-y
+        int fireSpreadRange = 2;
 
         Solid(int x, int y): Element(x, y){
         }
@@ -67,11 +69,29 @@ class Solid: public Element{
         }
 
         void updateFire() {
-            if (onFire) {
-                colour.r = (Uint8)(200 + rand()%40);
-                colour.g = (Uint8)(rand()%255);
-                colour.b = (Uint8)(rand()%10);
+            if (!onFire) {return;}
+
+            // reduce fire ticks destroy self if so
+            fireTicks --;
+            if (fireTicks <= 0) {
+                grid.set(x, y, nullptr);
+                return;
             }
+            
+            // look like fire
+            colour.r = (Uint8)(200 + rand()%40);
+            colour.g = (Uint8)(rand()%255);
+            colour.b = (Uint8)(rand()%10);
+            
+            // spread to neighbours by chance
+            if ((float)rand()/RAND_MAX > fireDiffusivity) {return;}
+            // pick a random neighbour
+            int dx = rand()%(fireSpreadRange*2+1) - fireSpreadRange; // has the effect of being in the range [-fireSpreadRange, fireSpreadRange] (incl. 0)
+            int dy = rand()%(fireSpreadRange*2+1) - fireSpreadRange;
+            if (dx == 0 && dy == 0) {return;}
+            if (grid.isEmpty(x+dx, y+dy)) {return;}
+            if (!grid.getPtr(x+dx, y+dy)->canBeSetOnFire()) {return;}
+            grid.getPtr(x+dx, y+dy)->attemptSetOnFire();
         }
 };
 
@@ -80,7 +100,7 @@ class Gas: public Element{
     public:
         int velX = 0;
         int velY = 0;
-        int density = 6; // higher = rises up faster
+        int density = 6; // higher = rises up faster (so the opposite of density then)
         SDL_Colour baseColour;
 
         Gas(int x, int y): Element(x, y){
@@ -130,8 +150,8 @@ class MovableSolid: public Solid{
         }
 
         void update(double deltaTime) {
-            updateFire();
             movableUpdate(deltaTime);
+            updateFire();
         }
 
         void movableUpdate(double deltaTime){
@@ -246,6 +266,9 @@ class Sand: public MovableSolid{
             tag = "sand";
             inertialResistance = 0.1;
             friction = 40;
+            fireResistance = 0.997;
+            fireDiffusivity = 0.01;
+            fireTicks = 20 + rand() % 10;
             initSolid();
         }
 };
@@ -257,6 +280,9 @@ class Dirt: public MovableSolid{
             tag = "dirt";
             inertialResistance = 0.9;
             friction = 2000;
+            fireResistance = 0.990;
+            fireDiffusivity = 0.02;
+            fireTicks = 50 + rand() % 10;
             initSolid();
         }
 };
@@ -269,6 +295,9 @@ class Coal: public MovableSolid{
             tag = "coal";
             inertialResistance = 0.8;
             friction = 1000;
+            fireResistance = 0.40;
+            fireDiffusivity = 0.10;
+            fireTicks = 500 + rand() % 100;
             initSolid();
         }
 };
@@ -280,6 +309,9 @@ class Stone: public ImmovableSolid{
             int random = rand() % 20;
             baseColour = {(Uint8)(96 + random), (Uint8)(93 + random), (Uint8)(90 + random)};
             tag = "stone";
+            fireResistance = 1.00;
+            fireDiffusivity = 0.02;
+            fireTicks = 100 + rand() % 50;
             initSolid();
         }
 };
@@ -291,5 +323,6 @@ class Smoke: public Gas{
             int random = rand() % 20;
             baseColour = {(Uint8)(200 + random), (Uint8)(200 + random), (Uint8)(200 + random)};
             tag = "smoke";
+            density = 6;
         }
 };
