@@ -34,31 +34,42 @@ class Grid{
         void moveTo(Element *element, int x, int y){
             int xPos = element->x;
             int yPos = element->y;
+            float startX = xPos;
+            float startY = yPos;
+
+            int xDirection = 1;
+            if (x < xPos){xDirection = -1;}
+
+            int yDirection = 1;
+            if (y < yPos){yDirection = -1;}
 
             if (x == xPos){ // Moving vertically
-                int yDirection = 1;
-                if (y < yPos){yDirection = -1;}
-
-                for (int i = 0; i < abs(y - yPos); i++){
+                for (int i = 0; i < abs(y - startY); i++){
                     if (!inBounds(xPos, yPos + yDirection) || isFull(xPos, yPos + yDirection)){break;}
                     yPos += yDirection;
                 }
 
             }
             else { // Not moving vertically
-                int xDirection = 1;
-                if (x < xPos){xDirection = -1;}
-
                 float gradient = (float)(y - yPos) / (float)(x - xPos);
 
-                float startY = yPos;
-                float dx = abs(x - xPos);
+                if (abs(gradient) > 1){
+                    gradient = 1 / gradient;
 
-                for (int i = 1; i <= dx; i++){
-                    int newY = startY + round(i * gradient);
-                    if (!inBounds(xPos + xDirection, newY) || isFull(xPos + xDirection, newY)){break;}
-                    xPos += xDirection;
-                    yPos = newY;
+                    for (int i = 1; i <= abs(y - startY); i++){
+                        int newX = startX + round(i * gradient);
+                        if (!inBounds(newX, yPos + yDirection) || isFull(newX, yPos + yDirection)){break;}
+                        xPos = newX;
+                        yPos += yDirection;
+                    }
+
+                }else{
+                    for (int i = 1; i <= abs(x - startX); i++){
+                        int newY = startY + round(i * gradient);
+                        if (!inBounds(xPos + xDirection, newY) || isFull(xPos + xDirection, newY)){break;}
+                        xPos += xDirection;
+                        yPos = newY;
+                    }
                 }
             }
 

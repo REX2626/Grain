@@ -77,7 +77,39 @@ class Solid: public Element{
 
 
 class Gas: public Element{
+    public:
+        int velX = 0;
+        int velY = 0;
+        int density = 6; // higher = rises up faster
+        SDL_Colour baseColour;
 
+        Gas(int x, int y): Element(x, y){
+
+        }
+
+        void update(double deltaTime){
+            velX = rand() % 11 - 5;
+            velY = rand() % 10 - density;
+            grid.moveTo(this, x + velX, y + velY);
+
+            // Darkens based on how many gas particles are around it
+            int neighbours = 0;
+            for (int i = -2; i < 3; i++){
+                for (int j = -2; j < 3; j++){
+                    if (i == 0 && j == 0) {break;}
+                    if (!grid.inBounds(x + i, y + j)){
+                        neighbours++;
+                    }
+                    else if (grid.isFull(x + i, y + j) && grid.get(x + i, y + j).tag == "smoke"){
+                        neighbours++;
+                    }
+                }
+            }
+
+            colour.r = baseColour.r - 5 * neighbours;
+            colour.g = baseColour.g - 5 * neighbours;
+            colour.b = baseColour.b - 5 * neighbours;
+        }
 };
 
 
@@ -254,5 +286,10 @@ class Stone: public ImmovableSolid{
 
 
 class Smoke: public Gas{
-
+    public:
+        Smoke(int x, int y): Gas(x, y){
+            int random = rand() % 20;
+            baseColour = {(Uint8)(200 + random), (Uint8)(200 + random), (Uint8)(200 + random)};
+            tag = "smoke";
+        }
 };

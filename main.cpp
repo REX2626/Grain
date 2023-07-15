@@ -47,6 +47,7 @@ void place_element(int x0, int y0){
             case 2: placedElement = new Water(x, y); break;
             case 3: placedElement = new Dirt(x, y); break;
             case 4: placedElement = new Coal(x, y); break;
+            case 5: placedElement = new Smoke(x, y); break;
         }
         if (grid.isFull(x, y) && grid.getPtr(x, y)->tag == placedElement->tag) {continue;} // don't overwrite same element
         grid.set(x, y, placedElement);
@@ -238,6 +239,10 @@ int main(int argc, char* args[]){
 
                     case SDLK_5:
                         selectedElement = 4;
+                        break;
+
+                    case SDLK_6:
+                        selectedElement = 5;
                         break;
 
                     case SDLK_UP:
