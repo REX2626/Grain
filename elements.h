@@ -37,6 +37,7 @@ class Solid: public Element{
         bool onFire;
         int fireTicks; // child should override
         SDL_Colour baseColour;
+        float fireResistance;
 
         Solid(int x, int y): Element(x, y){
         }
@@ -44,12 +45,19 @@ class Solid: public Element{
         void initSolid() {
             onFire = false;
             colour = baseColour;
-            canBeSetOnFire = true;
         }
 
-        void setOnFire() {
+        bool canBeSetOnFire() {return true;}
+
+        void ignite() {
             if (onFire) {return;}
             onFire = true;
+        }
+
+        bool attemptSetOnFire() {
+            if ((float)rand()/RAND_MAX <= fireResistance) {return false;}
+            ignite();
+            return true; 
         }
 
         void putOutFire() {

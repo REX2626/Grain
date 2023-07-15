@@ -10,11 +10,9 @@ class Element{
         int y;
         SDL_Colour colour = {106, 13, 173}; // Purple (this should be overridden by child class)
         string tag = ""; // Used to differentiate elements
-        bool updated;
-        bool canBeSetOnFire = false;
+        bool updated = false;
 
         Element(int x, int y): x(x), y(y){
-            updated = false;
         }
 
         void setX(int X){
@@ -39,7 +37,11 @@ class Element{
 
         virtual void setFreeFalling(){}
 
-        virtual void setOnFire(){}
+        virtual void ignite(){}
+
+        virtual bool attemptSetOnFire(){ return false; }
+
+        virtual bool canBeSetOnFire(){return false;}
 
         void print(){
             cout << "Element of x: " << x << " y: " << y << "\n";

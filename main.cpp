@@ -106,9 +106,9 @@ void igniteInRange(int x0, int y0) {
         y = y0 + dy;
         if (!grid.inBounds(x, y)) {continue;} // Only ignite element in bounds
         if (grid.isEmpty(x, y)) {continue;}
-        if (!grid.getPtr(x, y)->canBeSetOnFire) {continue;}
         if ((dx*dx) + (dy*dy) > placeSize*placeSize + 1) {continue;} // Only ignite element inside circle around cursor
-        grid.getPtr(x, y)->setOnFire();
+        if (!grid.getPtr(x, y)->canBeSetOnFire()) {continue;}
+        grid.getPtr(x, y)->ignite();
     }
 }
 
