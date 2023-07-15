@@ -127,7 +127,16 @@ void update(double deltaTime){
 
     }
     Element *elem;
-    for (x = 0; x < GRID_WIDTH; x++) {
+    bool rand_choice = rand()%2;
+    int x_iter;
+    if (rand_choice) {
+        x = 0;
+        x_iter = 1;
+    } else {
+        x = GRID_WIDTH-1;
+        x_iter = -1;
+    }
+    for (; x >= 0 && x < GRID_WIDTH; x += x_iter) {
         for (y = GRID_HEIGHT-1; y >= 0; y--) { // From bottom to top
             if (grid.isEmpty(x, y)) {continue;}
             elem = grid.getPtr(x, y);
