@@ -51,7 +51,7 @@ class MovableSolid: public Solid{
     public:
         bool freeFalling = true;
         double inertialResistance; // between 0 and 1
-        double friction; // between 0 and 1
+        double friction;
         int distFallen = 0;
         int prevX;
         int prevY;
@@ -64,7 +64,7 @@ class MovableSolid: public Solid{
         void update(double deltaTime){
             prevX = x;
             prevY = y;
-            velX -= velX * friction; // decrease velX proportional to friction
+            velX *= max(0.0, 1 - deltaTime*friction); // decrease velX proportional to friction
 
             // Moving sideways
             if (velX > 0){
@@ -91,7 +91,6 @@ class MovableSolid: public Solid{
                 // Falling
                 if (grid.isEmpty(x, y+1)){
                     grid.move(this, x, y+1);
-                    setAdjacentFreeFalling();
                 }
                 // Displaces water
                 else if (grid.get(x, y+1).tag == "water"){
@@ -115,13 +114,15 @@ class MovableSolid: public Solid{
                     freeFalling = false;
                     if (velX > 0){velX += distFallen;}
                     else if (velX < 0){velX -= distFallen;}
-                    else {velX = (rand()%2 * 2 - 1) * distFallen;}
+                    else {velX = (rand()%2 * 2 - 1) * max(5, distFallen);}
+                    velX *= 4 * rand()/RAND_MAX; // arbitrary
                     distFallen = 0;
                 }
             }
             else {
                 freeFalling = true;
                 distFallen += y - prevY;
+                setAdjacentFreeFalling();
             }
         }
 
@@ -129,6 +130,8 @@ class MovableSolid: public Solid{
             // Call setFreeFalling on the left and right cells
             if (grid.inBounds(x-1, y) && grid.isFull(x-1, y)) {grid.getPtr(x-1, y)->setFreeFalling();}
             if (grid.inBounds(x+1, y) && grid.isFull(x+1, y)) {grid.getPtr(x+1, y)->setFreeFalling();}
+            if (grid.inBounds(x-1, y-1) && grid.isFull(x-1, y-1)) {grid.getPtr(x-1, y-1)->setFreeFalling();}
+            if (grid.inBounds(x+1, y-1) && grid.isFull(x+1, y-1)) {grid.getPtr(x+1, y-1)->setFreeFalling();}
         }
 
         void setFreeFalling(){
@@ -165,7 +168,7 @@ class Sand: public MovableSolid{
             colour = {(Uint8)(225 + rand() % 20), (Uint8)(160 + rand() % 20), 0};
             tag = "sand";
             inertialResistance = 0.1;
-            friction = 0.2;
+            friction = 60;
         }
 };
 
@@ -174,8 +177,8 @@ class Dirt: public MovableSolid{
         Dirt(int x, int y): MovableSolid(x, y){
             colour = {(Uint8)(100 + rand() % 20), (Uint8)(50 + rand() % 10), 0};
             tag = "dirt";
-            inertialResistance = 0.4;
-            friction = 0.45;
+            inertialResistance = 0.9;
+            friction = 2000;
         }
 };
 
@@ -185,8 +188,8 @@ class Coal: public MovableSolid{
             int random = rand() % 15;
             colour = {(Uint8)(30 + random), (Uint8)(34 + random), (Uint8)(32 + random)};
             tag = "coal";
-            inertialResistance = 0.85;
-            friction = 0.85;
+            inertialResistance = 0.0;
+            friction = 150;
         }
 };
 
