@@ -167,6 +167,14 @@ void update(double deltaTime){
         }
     }
 
+    // delete elems with health <= 0
+    for (x=0; x < GRID_WIDTH; ++x)
+    for (y=0; y < GRID_HEIGHT; ++y) {
+        if (grid.isEmpty(x, y)) {continue;}
+        if (grid.getPtr(x, y)->health > 0) {continue;}
+        grid.set(x, y, nullptr);
+    }
+
     // create smoke, yes this is in the wrong place
     // but smoke isnt defined yet in the other place
     // because we put our stuff in .h files soooo
