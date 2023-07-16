@@ -7,18 +7,24 @@ void updateTemp(Element *e) {
     int y = e->y;
     int dx, dy;
     float weightedTempDiff = 0.0;
-    float neighTemp;
-    for (dx=-1; dx<=1; dx+=2) // loop thru 4 neighbours
-    for (dy=-1; dy<=1; dy+=2) {
+    float neighTemp, cornerFac;
+    for (dx=-1; dx<=1; dx++) // loop thru 8 neighbours
+    for (dy=-1; dy<=1; dy++) {
+        if (dx == 0 && dy == 0) {continue;}
         if (!grid.inBounds(x+dx, y+dy)) {continue;}
+        cornerFac = 1;
+        if (abs(dx) == 1 && abs(dy) == 1) {
+            cornerFac = 0.707;
+        }
         if (grid.isEmpty(x+dx, y+dy)) {
-            weightedTempDiff += - AIR_THERM_CONDUCTIVITY * e->temperature;
+            weightedTempDiff += - cornerFac * AIR_THERM_CONDUCTIVITY * e->temperature;
             continue;
         }
         neighTemp = grid.getPtr(x+dx, y+dy)->temperature;
-        weightedTempDiff += grid.getPtr(x+dx, y+dy)->thermalConductivity * (neighTemp - e->temperature);
+        weightedTempDiff += cornerFac * grid.getPtr(x+dx, y+dy)->thermalConductivity * (neighTemp - e->temperature);
     }
-    e->temperature += weightedTempDiff/6; // div by 6 to ensure cant have temp overflow
+    weightedTempDiff *= 80 + rand()%40;
+    e->temperature += weightedTempDiff/e->heatCapacity;
 }
 
 // STATES
@@ -29,7 +35,12 @@ class Liquid: public Element{
         double density; // greater -> will sink below other liquids with a lower density
 
         Liquid(int x, int y): Element(x, y){
+            initLiquid();
+        }
+
+        void initLiquid() {
             state = "liquid";
+            initElement();
         }
 
         double getDensity(){return density;}
@@ -90,7 +101,13 @@ class Liquid: public Element{
             *yPtr = pY;
         }
 
-        void update(double deltaTime){
+        void update(double deltaTime) {
+            updateLiquid(deltaTime);
+            updateTemp(this);
+            updateFire();
+        }
+
+        void updateLiquid(double deltaTime){
             // Find position moving through air, seeks out closest downhill position
             int pX;
             int pY;
@@ -115,87 +132,22 @@ class Liquid: public Element{
                     grid.swap(this, x - dir, y);
                 }
             }
-
-            updateTemp(this);
         }
 };
 
 
 class Solid: public Element{
     public:
-        int fireTicks = 50; // child should override
-        SDL_Colour baseColour;
-        float fireResistance = 0.95; // higher is more resistant
-        float fireDiffusivity = 0.10; // higher is more spread-y
-
-        int fireSpreadRange = 2;
-
         Solid(int x, int y): Element(x, y){
-            state = "solid";
+            initSolid();
         }
 
         void initSolid() {
-            onFire = false;
-            colour = baseColour;
+            state = "solid";
+            initElement();
         }
 
         bool canBeSetOnFire() {return true;}
-
-        void ignite() {
-            if (onFire) {return;}
-            temperature = max((float)150.0, temperature);
-            onFire = true;
-        }
-
-        bool attemptSetOnFire() {
-            if ((float)rand()/RAND_MAX <= fireResistance) {return false;}
-            ignite();
-            return true;
-        }
-
-        void putOutFire() {
-            if (!onFire) {return;}
-            onFire = false;
-            colour = baseColour;
-        }
-
-        void updateFire() {
-            if (temperature > igniteTemp) {
-                ignite();
-            }
-
-            if (!onFire) {return;}
-
-            if (temperature < igniteTemp - 1) {
-                putOutFire();
-                return;
-            }
-
-            // increase temperature
-            temperature += 1;
-
-            // reduce fire ticks destroy self if so
-            fireTicks --;
-            if (fireTicks <= 0) {
-                grid.set(x, y, nullptr);
-                return;
-            }
-
-            // look like fire
-            colour.r = (Uint8)(200 + rand()%40);
-            colour.g = (Uint8)(rand()%255);
-            colour.b = (Uint8)(rand()%10);
-
-            // // spread to neighbours by chance
-            // if ((float)rand()/RAND_MAX > fireDiffusivity) {return;}
-            // // pick a random neighbour
-            // int dx = rand()%(fireSpreadRange*2+1) - fireSpreadRange; // has the effect of being in the range [-fireSpreadRange, fireSpreadRange] (incl. 0)
-            // int dy = rand()%(fireSpreadRange*2+1) - fireSpreadRange;
-            // if (dx == 0 && dy == 0) {return;}
-            // if (grid.isEmpty(x+dx, y+dy)) {return;}
-            // if (!grid.getPtr(x+dx, y+dy)->canBeSetOnFire()) {return;}
-            // // grid.getPtr(x+dx, y+dy)->attemptSetOnFire();
-        }
 };
 
 
@@ -204,13 +156,23 @@ class Gas: public Element{
         int velX = 0;
         int velY = 0;
         int density = 6; // higher = rises up faster (so the opposite of density then)
-        SDL_Colour baseColour;
 
         Gas(int x, int y): Element(x, y){
-            state = "gas";
+            initGas();
         }
 
-        void update(double deltaTime){
+        void initGas() {
+            state = "gas";
+            initElement();
+        }
+
+        void update(double deltaTime) {
+            updateGas();
+            updateTemp(this);
+            updateFire();
+        }
+
+        void updateGas(){
             velX = rand() % 11 - 5;
             velY = rand() % 10 - density;
             grid.moveTo(this, x + velX, y + velY);
@@ -232,8 +194,6 @@ class Gas: public Element{
             colour.r = baseColour.r - 5 * neighbours;
             colour.g = baseColour.g - 5 * neighbours;
             colour.b = baseColour.b - 5 * neighbours;
-
-            updateTemp(this);
         }
 };
 
@@ -359,10 +319,13 @@ class ImmovableSolid: public Solid{
 class Water: public Liquid{
     public:
         Water(int x, int y): Liquid(x, y){
-            colour = {(Uint8)(170 + rand() % 20), (Uint8)(210 + rand() % 20), (Uint8)(230 + rand() % 20)};
+            baseColour = {(Uint8)(170 + rand() % 20), (Uint8)(210 + rand() % 20), (Uint8)(230 + rand() % 20)};
             tag = "water";
             dispersion = 5;
             density = 0.1;
+            heatCapacity = 4186;
+            thermalConductivity = 0.65;
+            initLiquid();
         }
 };
 
@@ -370,20 +333,31 @@ class Oil: public Liquid{
     public:
         Oil(int x, int y): Liquid(x, y){
             int random = rand() % 4;
-            colour = {(Uint8)(10 + random), (Uint8)(10 + random), (Uint8)(10 + random)};
+            baseColour = {(Uint8)(10 + random), (Uint8)(10 + random), (Uint8)(10 + random)};
             tag = "oil";
             dispersion = 2;
             density = 0.5;
+            heatCapacity = 2000;
+            thermalConductivity = 0.12;
+            igniteTemp = 300;
+            initLiquid();
+        }
+
+        bool canBeSetOnFire() {
+            return true;
         }
 };
 
 class Slime: public Liquid{
     public:
         Slime(int x, int y): Liquid(x, y){
-            colour = {(Uint8)(20 + rand() % 20), (Uint8)(200 + rand() % 20), (Uint8)(100 + rand() % 20)};
+            baseColour = {(Uint8)(20 + rand() % 20), (Uint8)(200 + rand() % 20), (Uint8)(100 + rand() % 20)};
             tag = "slime";
             dispersion = 1;
             density = 0.8;
+            heatCapacity = 3000; // a bit less than water ig#
+            thermalConductivity = 0.50;
+            initLiquid();
         }
 };
 
@@ -395,11 +369,12 @@ class Sand: public MovableSolid{
             tag = "sand";
             inertialResistance = 0.1;
             friction = 0.2;
-            fireResistance = 0.997;
-            fireDiffusivity = 0.01;
-            fireTicks = 20 + rand() % 10;
+            heatCapacity = 830;
+            thermalConductivity = 0.15;
             initSolid();
         }
+
+        bool canBeSetOnFire() {return false;}
 };
 
 class Dirt: public MovableSolid{
@@ -409,9 +384,9 @@ class Dirt: public MovableSolid{
             tag = "dirt";
             inertialResistance = 0.6;
             friction = 0.6;
-            fireResistance = 0.990;
-            fireDiffusivity = 0.02;
-            fireTicks = 50 + rand() % 10;
+            heatCapacity = 800;
+            thermalConductivity = 0.36;
+            igniteTemp = 600;
             initSolid();
         }
 };
@@ -424,9 +399,9 @@ class Coal: public MovableSolid{
             tag = "coal";
             inertialResistance = 0.8;
             friction = 0.8;
-            fireResistance = 0.40;
-            fireDiffusivity = 0.10;
-            fireTicks = 500 + rand() % 100;
+            heatCapacity = 1380; // (bituminous)
+            thermalConductivity = 0.17;
+            igniteTemp = 300;
             initSolid();
         }
 };
@@ -438,9 +413,9 @@ class Stone: public ImmovableSolid{
             int random = rand() % 20;
             baseColour = {(Uint8)(96 + random), (Uint8)(93 + random), (Uint8)(90 + random)};
             tag = "stone";
-            fireResistance = 1.00;
-            fireDiffusivity = 0.02;
-            fireTicks = 100 + rand() % 50;
+            heatCapacity = 1000;
+            thermalConductivity = 0.9;
+            igniteTemp = 800;
             initSolid();
         }
 };
@@ -451,10 +426,9 @@ class Wood: public ImmovableSolid {
         int random = rand()%20 - 10;
         baseColour = {(Uint8)(100+random), (Uint8)(75+random), (Uint8)(50+random)};
         tag = "wood";
-        fireResistance = 0.30;
-        fireDiffusivity = 0.20;
-        fireTicks = 150 + rand()%50;
-        fireSpreadRange = 3;
+        heatCapacity = 1300;
+        thermalConductivity = 0.12;
+        igniteTemp = 200;
         initSolid();
     }
 };
@@ -468,5 +442,10 @@ class Smoke: public Gas{
             tag = "smoke";
             density = 6;
             temperature = 100; // https://www.google.com/search?q=temperature+of+smoke+degrees+c
+            heatCapacity = 1000;
+            thermalConductivity = 0.05;
+            initGas();
         }
+
+        bool canBeSetOnFire() {return false;}
 };
