@@ -54,20 +54,10 @@ class Element{
                     heat_col = {0, 0, 200, 50};
                 } else if (temperature < -20) {
                     heat_col = {0, 255, 200, 50};
-                } else if (temperature < 20) {
+                } else if (temperature < 1) {
                     heat_col = {0, 255, 0, 50};
-                } else if (temperature < 50) {
-                    heat_col = {0, 255, 0, 200};
-                } else if (temperature < 100) {
-                    heat_col = {255, 255, 0, 200};
-                } else if (temperature < 150) {
-                    heat_col = {255, 165, 0, 200};
-                } else if (temperature < 200) {
-                    heat_col = {255, 127, 80, 200};
-                } else if (temperature < 300) {
-                    heat_col = {255, 69, 0, 200};
-                } else if (temperature < 500) {
-                    heat_col = {255, 0, 0, 200};
+                } else if (temperature < 10000) {
+                    heat_col = {255, (Uint8)(255 - log(temperature) * 27.686), 0, 200};
                 } else {
                     heat_col = {255, 255, 255, 200};
                 }

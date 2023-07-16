@@ -362,7 +362,7 @@ class Stone: public ImmovableSolid{
             baseColour = {(Uint8)(96 + random), (Uint8)(93 + random), (Uint8)(90 + random)};
             tag = "stone";
             heatCapacity = 1000;
-            thermalConductivity = 2.79;
+            thermalConductivity = 0.9;
             igniteTemp = 800;
             initSolid();
         }
