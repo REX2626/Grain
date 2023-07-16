@@ -31,9 +31,9 @@ class Element{
         void initElement() {
             colour = baseColour;
             onFire = false;
-            thermalConductivity *= 0.6 + 0.6*((float)rand()/RAND_MAX);
-            fireTicks *= 0.6 + 0.6*((float)rand()/RAND_MAX);
-            heatCapacity *= 0.6 + 0.6*((float)rand()/RAND_MAX);
+            thermalConductivity *= 0.6 + 1.07*((float)rand()/RAND_MAX);
+            fireTicks *= 0.6 + 1.07*((float)rand()/RAND_MAX);
+            heatCapacity *= 0.6 + 1.07*((float)rand()/RAND_MAX);
         }
 
         void setX(int X){

@@ -9,16 +9,21 @@ void updateTemp(Element *e) {
     int y = e->y;
     int dx, dy;
     float weightedTempDiff = 0.0;
-    float neighTemp;
-    for (dx=-1; dx<=1; dx+=2) // loop thru 4 neighbours
-    for (dy=-1; dy<=1; dy+=2) {
+    float neighTemp, cornerFac;
+    for (dx=-1; dx<=1; dx++) // loop thru 8 neighbours
+    for (dy=-1; dy<=1; dy++) {
+        if (dx == 0 && dy == 0) {continue;}
         if (!grid.inBounds(x+dx, y+dy)) {continue;}
+        cornerFac = 1;
+        if (abs(dx) == 1 && abs(dy) == 1) {
+            cornerFac = 0.707;
+        }
         if (grid.isEmpty(x+dx, y+dy)) {
-            weightedTempDiff += - AIR_THERM_CONDUCTIVITY * e->temperature;
+            weightedTempDiff += - cornerFac * AIR_THERM_CONDUCTIVITY * e->temperature;
             continue;
         }
         neighTemp = grid.getPtr(x+dx, y+dy)->temperature;
-        weightedTempDiff += grid.getPtr(x+dx, y+dy)->thermalConductivity * (neighTemp - e->temperature);
+        weightedTempDiff += cornerFac * grid.getPtr(x+dx, y+dy)->thermalConductivity * (neighTemp - e->temperature);
     }
     weightedTempDiff *= 80 + rand()%40;
     e->temperature += weightedTempDiff/e->heatCapacity;
