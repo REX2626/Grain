@@ -41,7 +41,7 @@ class Liquid: public Element{
             }
             // Displacing lower density liquid
             else if (grid.inBounds(x, y+1) && grid.isFull(x, y+1) && grid.get(x, y+1).state == "liquid" &&
-                     grid.getPtr(x, y+1)->getDensity() < density && (density - grid.getPtr(x, y+1)->getDensity()) < (float)rand()/RAND_MAX){ // bigger density difference, greater chance
+                     grid.getPtr(x, y+1)->getDensity() < density && (density - grid.getPtr(x, y+1)->getDensity()) > (float)rand()/RAND_MAX){ // bigger density difference, greater chance
                         grid.swap(this, x, y+1);
             }
             // Moves sideways randomly, either through air or a lower density liquid
@@ -59,7 +59,7 @@ class Liquid: public Element{
                 else if (grid.inBounds(x + dir, y) && grid.getPtr(x + dir, y)->state == "liquid" && grid.getPtr(x + dir, y)->getDensity() < density){
                     grid.swap(this, x + dir, y);
                 }
-                else if (grid.inBounds(x - dir, y) && grid.getPtr(x + dir, y)->state == "liquid" && grid.getPtr(x - dir, y)->getDensity() < density){
+                else if (grid.inBounds(x - dir, y) && grid.getPtr(x - dir, y)->state == "liquid" && grid.getPtr(x - dir, y)->getDensity() < density){
                     grid.swap(this, x - dir, y);
                 }
             }
