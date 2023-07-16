@@ -20,7 +20,7 @@ void updateTemp(Element *e) {
         neighTemp = grid.getPtr(x+dx, y+dy)->temperature;
         weightedTempDiff += grid.getPtr(x+dx, y+dy)->thermalConductivity * (neighTemp - e->temperature);
     }
-    weightedTempDiff *= 100; // found empirically
+    weightedTempDiff *= 80 + rand()%40;
     e->temperature += weightedTempDiff/e->heatCapacity;
 }
 
