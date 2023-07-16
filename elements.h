@@ -239,8 +239,8 @@ class MovableSolid: public Solid{
                 if (grid.isEmpty(x, y+1)){
                     grid.move(this, x, y+1);
                 }
-                // Displaces water
-                else if (grid.get(x, y+1).tag == "water"){
+                // Displaces liquid
+                else if (grid.get(x, y+1).state == "liquid"){
                     grid.swap(this, x, y+1);
                 }
                 // Moves diagonally randomly
