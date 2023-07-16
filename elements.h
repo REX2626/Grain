@@ -6,26 +6,42 @@ using namespace std;
 
 class Liquid: public Element{
     public:
-        int dispersion;
+        int dispersion; // greater -> moves further each frame
+        double density; // greater -> will sink below other liquids with a lower density
 
         Liquid(int x, int y): Element(x, y){
-
+            state = "liquid";
         }
+
+        double getDensity(){return density;}
 
         void update(double deltaTime){
             // Falling
             if (grid.inBounds(x, y+1) && grid.isEmpty(x, y+1)){
                 grid.move(this, x, y+1);
             }
-            // Moves sideways randomly
+            // Displacing lower density liquid
+            else if (grid.inBounds(x, y+1) && grid.isFull(x, y+1) && grid.get(x, y+1).state == "liquid" &&
+                     grid.getPtr(x, y+1)->getDensity() < density && (density - grid.getPtr(x, y+1)->getDensity()) < (float)rand()/RAND_MAX){ // bigger density difference, greater chance
+                        grid.swap(this, x, y+1);
+            }
+            // Moves sideways randomly, either through air or a lower density liquid
             else if (y+1 == GRID_HEIGHT || grid.isFull(x, y+1)){
                 int dir = 2*(rand()%2) - 1; // either -1 or +1
 
+                // through air
                 if (grid.inBounds(x + dir, y) && grid.isEmpty(x + dir, y)){
                     grid.moveTo(this, x + dir*dispersion, y);
                 }
                 else if (grid.inBounds(x - dir, y) && grid.isEmpty(x - dir, y)){
                     grid.moveTo(this, x - dir*dispersion, y);
+                }
+                // through lower density liquid
+                else if (grid.inBounds(x + dir, y) && grid.getPtr(x + dir, y)->state == "liquid" && grid.getPtr(x + dir, y)->getDensity() < density){
+                    grid.swap(this, x + dir, y);
+                }
+                else if (grid.inBounds(x - dir, y) && grid.getPtr(x + dir, y)->state == "liquid" && grid.getPtr(x - dir, y)->getDensity() < density){
+                    grid.swap(this, x - dir, y);
                 }
             }
         }
@@ -40,6 +56,7 @@ class Solid: public Element{
         float fireResistance;
 
         Solid(int x, int y): Element(x, y){
+            state = "solid";
         }
 
         void initSolid() {
@@ -57,7 +74,7 @@ class Solid: public Element{
         bool attemptSetOnFire() {
             if ((float)rand()/RAND_MAX <= fireResistance) {return false;}
             ignite();
-            return true; 
+            return true;
         }
 
         void putOutFire() {
@@ -84,7 +101,7 @@ class Gas: public Element{
         SDL_Colour baseColour;
 
         Gas(int x, int y): Element(x, y){
-
+            state = "gas";
         }
 
         void update(double deltaTime){
@@ -119,7 +136,7 @@ class MovableSolid: public Solid{
     public:
         bool freeFalling = true;
         double inertialResistance; // between 0 and 1
-        double friction;
+        double friction; // between 0 and 1
         int distFallen = 0;
         int prevX;
         int prevY;
@@ -137,7 +154,7 @@ class MovableSolid: public Solid{
         void movableUpdate(double deltaTime){
             prevX = x;
             prevY = y;
-            velX *= max(0.0, 1 - deltaTime*friction); // decrease velX proportional to friction
+            velX -= velX * friction; // decrease velX proportional to friction
 
             // Moving sideways
             if (velX > 0){
@@ -235,6 +252,28 @@ class Water: public Liquid{
             colour = {(Uint8)(170 + rand() % 20), (Uint8)(210 + rand() % 20), (Uint8)(230 + rand() % 20)};
             tag = "water";
             dispersion = 3;
+            density = 0.1;
+        }
+};
+
+class Oil: public Liquid{
+    public:
+        Oil(int x, int y): Liquid(x, y){
+            int random = rand() % 5;
+            colour = {(Uint8)(15 + random), (Uint8)(15 + random), (Uint8)(15 + random)};
+            tag = "oil";
+            dispersion = 2;
+            density = 0.5;
+        }
+};
+
+class Slime: public Liquid{
+    public:
+        Slime(int x, int y): Liquid(x, y){
+            colour = {(Uint8)(20 + rand() % 20), (Uint8)(200 + rand() % 20), (Uint8)(100 + rand() % 20)};
+            tag = "slime";
+            dispersion = 1;
+            density = 0.8;
         }
 };
 
@@ -245,7 +284,7 @@ class Sand: public MovableSolid{
             baseColour = {(Uint8)(225 + rand() % 20), (Uint8)(160 + rand() % 20), 0};
             tag = "sand";
             inertialResistance = 0.1;
-            friction = 40;
+            friction = 0.2;
             initSolid();
         }
 };
@@ -255,8 +294,8 @@ class Dirt: public MovableSolid{
         Dirt(int x, int y): MovableSolid(x, y){
             baseColour = {(Uint8)(100 + rand() % 20), (Uint8)(50 + rand() % 10), 0};
             tag = "dirt";
-            inertialResistance = 0.9;
-            friction = 2000;
+            inertialResistance = 0.6;
+            friction = 0.6;
             initSolid();
         }
 };
@@ -268,7 +307,7 @@ class Coal: public MovableSolid{
             baseColour = {(Uint8)(30 + random), (Uint8)(34 + random), (Uint8)(32 + random)};
             tag = "coal";
             inertialResistance = 0.8;
-            friction = 1000;
+            friction = 0.8;
             initSolid();
         }
 };

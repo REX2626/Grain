@@ -20,7 +20,7 @@ Grid grid;
 
 int xMouse, yMouse;
 int oldXMouse, oldYMouse;
-int placeSize = 0;
+int placeSize = 2;
 
 int selectedElement = 0;
 
@@ -48,6 +48,8 @@ void place_element(int x0, int y0){
             case 3: placedElement = new Dirt(x, y); break;
             case 4: placedElement = new Coal(x, y); break;
             case 5: placedElement = new Smoke(x, y); break;
+            case 6: placedElement = new Oil(x, y); break;
+            case 7: placedElement = new Slime(x, y); break;
         }
         if (grid.isFull(x, y) && grid.getPtr(x, y)->tag == placedElement->tag) {continue;} // don't overwrite same element
         grid.set(x, y, placedElement);
@@ -115,7 +117,7 @@ void igniteInRange(int x0, int y0) {
 
 void draw(SDL_Renderer* renderer, double deltaTime){
     // Colours background black
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+    SDL_SetRenderDrawColor(renderer, 50, 50, 50, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
 
     // Looping through all elements in the grid array and drawing each element
@@ -243,6 +245,14 @@ int main(int argc, char* args[]){
 
                     case SDLK_6:
                         selectedElement = 5;
+                        break;
+
+                    case SDLK_7:
+                        selectedElement = 6;
+                        break;
+
+                    case SDLK_8:
+                        selectedElement = 7;
                         break;
 
                     case SDLK_UP:

@@ -9,6 +9,7 @@ class Element{
         int x;
         int y;
         SDL_Colour colour = {106, 13, 173}; // Purple (this should be overridden by child class)
+        string state = "";
         string tag = ""; // Used to differentiate elements
         bool updated = false;
 
@@ -42,6 +43,8 @@ class Element{
         virtual bool attemptSetOnFire(){ return false; }
 
         virtual bool canBeSetOnFire(){return false;}
+
+        virtual double getDensity(){return NAN;}
 
         void print(){
             cout << "Element of x: " << x << " y: " << y << "\n";
