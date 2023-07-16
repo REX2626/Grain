@@ -2,8 +2,6 @@
 
 using namespace std;
 
-// STATES
-
 void updateTemp(Element *e) {
     int x = e->x;
     int y = e->y;
@@ -23,6 +21,8 @@ void updateTemp(Element *e) {
     e->temperature += weightedTempDiff/6; // div by 6 to ensure cant have temp overflow
 }
 
+// STATES
+
 class Liquid: public Element{
     public:
         int dispersion; // greater -> moves further each frame
@@ -34,29 +34,81 @@ class Liquid: public Element{
 
         double getDensity(){return density;}
 
-        void update(double deltaTime){
-            // Falling
-            if (grid.inBounds(x, y+1) && grid.isEmpty(x, y+1)){
-                grid.move(this, x, y+1);
+        void findNewPosition(int *xPtr, int *yPtr){
+            // if cell below is free, then move there
+            if (grid.inBounds(x, y + 1) && grid.isEmpty(x, y + 1)){
+                *xPtr = x;
+                *yPtr = y + 1;
+                return;
             }
+
+            // find closest downhill
+            int pX;
+            int pY;
+            int dir = 2*(rand()%2) - 1; // either -1 or +1
+            int dist1 = 0;
+            int dist2 = 0;
+            int pX1 = -1;
+            int pX2 = -1;
+
+            for (int step = 1; step < dispersion+1; step++){
+                // attempt to find downward cell
+                if (!grid.inBounds(x + dir*step, y) || grid.isFull(x + dir*step, y)) {break;}
+                dist1++;
+                if (grid.inBounds(x + dir*step, y + 1) && grid.isEmpty(x + dir*step, y + 1)) {
+                    pX1 = x + dir*step;
+                    break;
+                }
+            }
+
+            for (int step = 1; step < dispersion+1; step++){
+                // attempt to find downward cell
+                if (!grid.inBounds(x - dir*step, y) || grid.isFull(x - dir*step, y)) {break;}
+                dist2++;
+                if (grid.inBounds(x - dir*step, y + 1) && grid.isEmpty(x - dir*step, y + 1)) {
+                    pX2 = x - dir*step;
+                    break;
+                }
+            }
+
+            if (pX1 == -1 && pX2 == -1) { // can't find downward cell
+                // find furthest space to the side
+                if (dist1 >= dist2) {pX = x + dir*dist1;}
+                else {pX = x - dir*dist2;}
+                pY = y;
+            }
+            else if (pX2 == -1 || (pX1 != -1 && dist1 <= dist2)){ // dist1 is shorter or equal to dist 2
+                pX = pX1;
+                pY = y + 1;
+            }
+            else if (pX1 == -1 || (pX2 != -1 && dist2 < dist1)){ // dist2 is shorter
+                pX = pX2;
+                pY = y + 1;
+            }
+
+            *xPtr = pX;
+            *yPtr = pY;
+        }
+
+        void update(double deltaTime){
+            // Find position moving through air, seeks out closest downhill position
+            int pX;
+            int pY;
+            findNewPosition(&pX, &pY);
+            if (pX != x || pY != y) {grid.move(this, pX, pY);}
+
             // Displacing lower density liquid
             else if (grid.inBounds(x, y+1) && grid.isFull(x, y+1) && grid.get(x, y+1).state == "liquid" &&
                      grid.getPtr(x, y+1)->getDensity() < density && (density - grid.getPtr(x, y+1)->getDensity()) > (float)rand()/RAND_MAX){ // bigger density difference, greater chance
                         grid.swap(this, x, y+1);
             }
-            // Moves sideways randomly, either through air or a lower density liquid
+
+            // Moves sideways randomly through a lower density liquid
             else if (y+1 == GRID_HEIGHT || grid.isFull(x, y+1)){
                 int dir = 2*(rand()%2) - 1; // either -1 or +1
 
-                // through air
-                if (grid.inBounds(x + dir, y) && grid.isEmpty(x + dir, y)){
-                    grid.moveTo(this, x + dir*dispersion, y);
-                }
-                else if (grid.inBounds(x - dir, y) && grid.isEmpty(x - dir, y)){
-                    grid.moveTo(this, x - dir*dispersion, y);
-                }
                 // through lower density liquid
-                else if (grid.inBounds(x + dir, y) && grid.getPtr(x + dir, y)->state == "liquid" && grid.getPtr(x + dir, y)->getDensity() < density){
+                if (grid.inBounds(x + dir, y) && grid.getPtr(x + dir, y)->state == "liquid" && grid.getPtr(x + dir, y)->getDensity() < density){
                     grid.swap(this, x + dir, y);
                 }
                 else if (grid.inBounds(x - dir, y) && grid.getPtr(x - dir, y)->state == "liquid" && grid.getPtr(x - dir, y)->getDensity() < density){
@@ -309,7 +361,7 @@ class Water: public Liquid{
         Water(int x, int y): Liquid(x, y){
             colour = {(Uint8)(170 + rand() % 20), (Uint8)(210 + rand() % 20), (Uint8)(230 + rand() % 20)};
             tag = "water";
-            dispersion = 3;
+            dispersion = 5;
             density = 0.1;
         }
 };
@@ -317,8 +369,8 @@ class Water: public Liquid{
 class Oil: public Liquid{
     public:
         Oil(int x, int y): Liquid(x, y){
-            int random = rand() % 5;
-            colour = {(Uint8)(15 + random), (Uint8)(15 + random), (Uint8)(15 + random)};
+            int random = rand() % 4;
+            colour = {(Uint8)(10 + random), (Uint8)(10 + random), (Uint8)(10 + random)};
             tag = "oil";
             dispersion = 2;
             density = 0.5;
@@ -368,7 +420,7 @@ class Coal: public MovableSolid{
     public:
         Coal(int x, int y): MovableSolid(x, y){
             int random = rand() % 15;
-            baseColour = {(Uint8)(30 + random), (Uint8)(34 + random), (Uint8)(32 + random)};
+            baseColour = {(Uint8)(25 + random), (Uint8)(29 + random), (Uint8)(27 + random)};
             tag = "coal";
             inertialResistance = 0.8;
             friction = 0.8;
