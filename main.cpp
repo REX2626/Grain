@@ -23,6 +23,7 @@ int oldXMouse, oldYMouse;
 int placeSize = 2;
 
 int selectedElement = 0;
+bool heatmapEnabled = false;
 
 // Pixel to grid square
 int p_to_grid(int x){
@@ -47,9 +48,10 @@ void place_element(int x0, int y0){
             case 2: placedElement = new Water(x, y); break;
             case 3: placedElement = new Dirt(x, y); break;
             case 4: placedElement = new Coal(x, y); break;
-            case 5: placedElement = new Smoke(x, y); break;
-            case 6: placedElement = new Oil(x, y); break;
-            case 7: placedElement = new Slime(x, y); break;
+            case 5: placedElement = new Wood(x, y); break;
+            case 6: placedElement = new Smoke(x, y); break;
+            case 7: placedElement = new Oil(x, y); break;
+            case 8: placedElement = new Slime(x, y); break;
         }
         if (grid.isFull(x, y) && grid.getPtr(x, y)->tag == placedElement->tag) {continue;} // don't overwrite same element
         grid.set(x, y, placedElement);
@@ -124,7 +126,7 @@ void draw(SDL_Renderer* renderer, double deltaTime){
     for (int x = 0; x < GRID_WIDTH; x++){
         for (int y = 0; y < GRID_HEIGHT; y++){
             if (grid.isFull(x, y)){
-                grid.getPtr(x, y)->render(renderer, GRID_SIZE);
+                grid.getPtr(x, y)->render(renderer, GRID_SIZE, heatmapEnabled);
             }
         }
     }
@@ -162,6 +164,28 @@ void update(double deltaTime){
             }
             elem->update(deltaTime);
             elem->updated = true;
+        }
+    }
+
+    // create smoke, yes this is in the wrong place
+    // but smoke isnt defined yet in the other place
+    // because we put our stuff in .h files soooo
+    // produce smoke
+    for (x=0; x < GRID_WIDTH; ++x) {
+        for (y = GRID_HEIGHT-1; y >= 0; y--) { // From bottom to top
+            if (grid.isEmpty(x, y)) {continue;}
+            elem = grid.getPtr(x, y);
+            if (elem->tag == "smoke") {continue;}
+            if (!elem->canBeSetOnFire()) {continue;}
+            if (!elem->onFire) {continue;}
+            if ((float)rand()/RAND_MAX <= elem->fireSmokiness) {
+                int dx = rand()%2 * 2 - 1; // either -1 or +1
+                int dy = rand()%2 * 2 - 1; // either -1 or +1
+                if (!grid.inBounds(x+dx, y+dy)) {continue;}
+                if (grid.isEmpty(x+dx, y+dy)) {
+                    grid.set(x+dx, y+dy, new Smoke(x+dx, y+dy));
+                }
+            }
         }
     }
 }
@@ -253,6 +277,14 @@ int main(int argc, char* args[]){
 
                     case SDLK_8:
                         selectedElement = 7;
+                        break;
+
+                    case SDLK_9:
+                        selectedElement = 8;
+                        break;
+
+                    case SDLK_h:
+                        heatmapEnabled = !heatmapEnabled;
                         break;
 
                     case SDLK_UP:
