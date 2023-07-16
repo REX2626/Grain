@@ -94,7 +94,7 @@ class Element{
             }
 
             // increase temperature
-            temperature += 2;
+            temperature += 5;
 
             // reduce fire ticks destroy self if so
             fireTicks --;
