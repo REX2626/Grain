@@ -31,8 +31,8 @@ void updateTemp(Element *e) {
 
 class Liquid: public Element{
     public:
-        int dispersion; // greater -> moves further each frame
-        double density; // greater -> will sink below other liquids with a lower density
+        int dispersion; // greater -> checks further to the side for downward cell each frame
+        int density; // measured in kg/m^3, greater -> will sink below other liquids with a lower density
 
         Liquid(int x, int y): Element(x, y){
             initLiquid();
@@ -63,8 +63,8 @@ class Liquid: public Element{
             int pX2 = -1;
 
             for (int step = 1; step < dispersion+1; step++){
-                // attempt to find downward cell
-                if (!grid.inBounds(x + dir*step, y) || grid.isFull(x + dir*step, y)) {break;}
+                // attempt to find downward cell, can pass through same liquid
+                if (!grid.inBounds(x + dir*step, y) || (grid.isFull(x + dir*step, y) && grid.getPtr(x + dir*step, y)->tag != tag)) {break;}
                 dist1++;
                 if (grid.inBounds(x + dir*step, y + 1) && grid.isEmpty(x + dir*step, y + 1)) {
                     pX1 = x + dir*step;
@@ -73,8 +73,8 @@ class Liquid: public Element{
             }
 
             for (int step = 1; step < dispersion+1; step++){
-                // attempt to find downward cell
-                if (!grid.inBounds(x - dir*step, y) || grid.isFull(x - dir*step, y)) {break;}
+                // attempt to find downward cell, can pass through same liquid
+                if (!grid.inBounds(x - dir*step, y) || (grid.isFull(x - dir*step, y) && grid.getPtr(x - dir*step, y)->tag != tag)) {break;}
                 dist2++;
                 if (grid.inBounds(x - dir*step, y + 1) && grid.isEmpty(x - dir*step, y + 1)) {
                     pX2 = x - dir*step;
@@ -84,6 +84,16 @@ class Liquid: public Element{
 
             if (pX1 == -1 && pX2 == -1) { // can't find downward cell
                 // find furthest space to the side
+                dist1 = 0;
+                dist2 = 0;
+                for (int step = 1; step < dispersion+1; step++) {
+                    if (!grid.inBounds(x + dir*step, y) || grid.isFull(x + dir*step, y)) {break;}
+                    dist1++;
+                }
+                for (int step = 1; step < dispersion+1; step++) {
+                    if (!grid.inBounds(x - dir*step, y) || grid.isFull(x - dir*step, y)) {break;}
+                    dist2++;
+                }
                 if (dist1 >= dist2) {pX = x + dir*dist1;}
                 else {pX = x - dir*dist2;}
                 pY = y;
@@ -112,13 +122,14 @@ class Liquid: public Element{
             int pX;
             int pY;
             findNewPosition(&pX, &pY);
-            if (pX != x || pY != y) {grid.move(this, pX, pY);}
 
             // Displacing lower density liquid
-            else if (grid.inBounds(x, y+1) && grid.isFull(x, y+1) && grid.get(x, y+1).state == "liquid" &&
-                     grid.getPtr(x, y+1)->getDensity() < density && (density - grid.getPtr(x, y+1)->getDensity()) > (float)rand()/RAND_MAX){ // bigger density difference, greater chance
+            if (grid.inBounds(x, y+1) && grid.isFull(x, y+1) && grid.get(x, y+1).state == "liquid" &&
+                     grid.getPtr(x, y+1)->getDensity() < density && grid.getPtr(x, y+1)->getDensity()/density < (float)rand()/RAND_MAX){ // bigger density difference, greater chance
                         grid.swap(this, x, y+1);
             }
+
+            else if (pX != x || pY != y) {grid.move(this, pX, pY);}
 
             // Moves sideways randomly through a lower density liquid
             else if (y+1 == GRID_HEIGHT || grid.isFull(x, y+1)){
@@ -322,7 +333,7 @@ class Water: public Liquid{
             baseColour = {(Uint8)(170 + rand() % 20), (Uint8)(210 + rand() % 20), (Uint8)(230 + rand() % 20)};
             tag = "water";
             dispersion = 5;
-            density = 0.1;
+            density = 997;
             heatCapacity = 4186;
             thermalConductivity = 0.65;
             initLiquid();
@@ -336,7 +347,7 @@ class Oil: public Liquid{
             baseColour = {(Uint8)(10 + random), (Uint8)(10 + random), (Uint8)(10 + random)};
             tag = "oil";
             dispersion = 2;
-            density = 0.5;
+            density = 930;
             heatCapacity = 2000;
             thermalConductivity = 0.12;
             igniteTemp = 300;
@@ -354,8 +365,8 @@ class Slime: public Liquid{
             baseColour = {(Uint8)(20 + rand() % 20), (Uint8)(200 + rand() % 20), (Uint8)(100 + rand() % 20)};
             tag = "slime";
             dispersion = 1;
-            density = 0.8;
-            heatCapacity = 3000; // a bit less than water ig#
+            density = 2190;
+            heatCapacity = 3000; // a bit less than water ig
             thermalConductivity = 0.50;
             initLiquid();
         }
