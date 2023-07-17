@@ -45,7 +45,7 @@ class Grid{
 
             if (x == xPos){ // Moving vertically
                 for (int i = 0; i < abs(y - startY); i++){
-                    if (!inBounds(xPos, yPos + yDirection) || isFull(xPos, yPos + yDirection)){break;}
+                    if (!inBounds(xPos, yPos + yDirection) || (isFull(xPos, yPos + yDirection) && get(xPos, yPos + yDirection).state != "liquid")){break;}
                     yPos += yDirection;
                 }
 
@@ -58,7 +58,7 @@ class Grid{
 
                     for (int i = 1; i <= abs(y - startY); i++){
                         int newX = startX + round(i * gradient);
-                        if (!inBounds(newX, yPos + yDirection) || isFull(newX, yPos + yDirection)){break;}
+                        if (!inBounds(newX, yPos + yDirection) || (isFull(newX, yPos + yDirection) && get(newX, yPos + yDirection).state != "liquid")){break;}
                         xPos = newX;
                         yPos += yDirection;
                     }
@@ -66,7 +66,7 @@ class Grid{
                 }else{
                     for (int i = 1; i <= abs(x - startX); i++){
                         int newY = startY + round(i * gradient);
-                        if (!inBounds(xPos + xDirection, newY) || isFull(xPos + xDirection, newY)){break;}
+                        if (!inBounds(xPos + xDirection, newY) || (isFull(xPos + xDirection, newY) && get(xPos + xDirection, newY).state != "liquid")){break;}
                         xPos += xDirection;
                         yPos = newY;
                     }
@@ -74,7 +74,11 @@ class Grid{
             }
 
             if (xPos != element->x || yPos != element->y){ // If the move positions have changed, move there
-                move(element, xPos, yPos);
+                if (isFull(xPos, yPos) && get(xPos, yPos).state == "liquid"){
+                    swap(element, xPos, yPos);
+                }else{
+                    move(element, xPos, yPos);
+                }
             }
         }
 
