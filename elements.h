@@ -166,7 +166,9 @@ class Gas: public Element{
     public:
         int velX = 0;
         int velY = 0;
-        int density = 6; // higher = rises up faster (so the opposite of density then)
+        int buoyancy = 6; // higher -> rises up faster (opposite of density)
+        int lifetime = 1000; // measured in frames
+        int timeAlive = 0;
 
         Gas(int x, int y): Element(x, y){
             initGas();
@@ -184,8 +186,11 @@ class Gas: public Element{
         }
 
         void updateGas(){
-            velX = rand() % 11 - 5;
-            velY = rand() % 10 - density;
+            timeAlive++;
+            if (timeAlive > lifetime) {health = 0; return;}
+
+            velX = rand() % 11 - 5; // -5 to +5
+            velY = rand() % 10 - buoyancy;
             grid.moveTo(this, x + velX, y + velY);
 
             // Darkens based on how many gas particles are around it
@@ -347,10 +352,10 @@ class Oil: public Liquid{
             baseColour = {(Uint8)(10 + random), (Uint8)(10 + random), (Uint8)(10 + random)};
             tag = "oil";
             dispersion = 2;
-            density = 930;
-            heatCapacity = 2000;
-            thermalConductivity = 0.12;
-            igniteTemp = 300;
+            density = 900;
+            heatCapacity = 800;
+            thermalConductivity = 0.7;
+            igniteTemp = 100;
             initLiquid();
         }
 
@@ -451,7 +456,8 @@ class Smoke: public Gas{
             int random = rand() % 20;
             baseColour = {(Uint8)(200 + random), (Uint8)(200 + random), (Uint8)(200 + random)};
             tag = "smoke";
-            density = 6;
+            buoyancy = 6;
+            lifetime = 600 + rand()%801; // 600-1400
             temperature = 100; // https://www.google.com/search?q=temperature+of+smoke+degrees+c
             heatCapacity = 1000;
             thermalConductivity = 0.05;
