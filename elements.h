@@ -372,7 +372,8 @@ class Slime: public Liquid{
             dispersion = 1;
             density = 2190;
             heatCapacity = 3000; // a bit less than water ig
-            thermalConductivity = 0.50;
+            thermalConductivity = 0.5;
+            acidResistance = 10;
             initLiquid();
         }
 };
@@ -432,6 +433,7 @@ class Stone: public ImmovableSolid{
             heatCapacity = 1000;
             thermalConductivity = 0.9;
             igniteTemp = 800;
+            acidResistance = 2;
             initSolid();
         }
 };
@@ -465,4 +467,53 @@ class Smoke: public Gas{
         }
 
         bool canBeSetOnFire() {return false;}
+};
+
+
+class Acid: public Liquid{
+    public:
+        int acidStrength;
+
+        Acid(int x, int y): Liquid(x, y){
+            baseColour = {(Uint8)(130 + rand() % 40), (Uint8)(40 + rand() % 20), (Uint8)(20 + rand() % 20)};
+            tag = "acid";
+            dispersion = 2;
+            density = 1200;
+            heatCapacity = 2000;
+            thermalConductivity = 0.4;
+            acidStrength = 5;
+            initLiquid();
+        }
+
+        int acidify() {return 0;}
+
+        void update(double deltaTime) {
+            int xDir = rand()%2 * 2 - 1; // -1 or +1
+            int yDir = rand()%2 * 2 - 1; // -1 or +1
+
+            colour = {(Uint8)(130 + rand() % 40), (Uint8)(40 + rand() % 20), (Uint8)(20 + rand() % 20)}; // random colour
+
+            // check for 8 adjacent neighbours, and try to acidify
+            for (int i = -1; i <= 1; i++){
+                for (int j = -1; j <= 1; j++){
+                    if (i == 0 && j == 0) {continue;}
+                    if (!grid.inBounds(x + i*xDir, y + j*yDir) || grid.isEmpty(x + i*xDir, y + j*yDir)) {continue;}
+                    string tag = grid.getPtr(x + i*xDir, y + j*yDir)->tag;
+                    if (tag == "acid" || tag == "smoke") {continue;}
+
+                    health -= 100/acidStrength * grid.getPtr(x + i*xDir, y + j*yDir)->acidify();
+
+                    if (rand()%4 == 0) { // 25% chance to generate smoke
+                        Smoke *smoke = new Smoke(x, y);
+                        smoke->lifetime = 80 + rand()%41; // 80-120 ticks
+                        grid.set(x, y, smoke);
+                    }
+
+                    Liquid::update(deltaTime);
+                    return;
+                }
+            }
+
+            Liquid::update(deltaTime);
+        }
 };

@@ -34,11 +34,8 @@ class Grid{
         void moveTo(Element *element, int x, int y){
             int xPos = element->x;
             int yPos = element->y;
-            float startX = xPos;
-            float startY = yPos;
-
-            int xDirection = 1;
-            if (x < xPos){xDirection = -1;}
+            int startX = xPos;
+            int startY = yPos;
 
             int yDirection = 1;
             if (y < yPos){yDirection = -1;}
@@ -62,8 +59,10 @@ class Grid{
                         xPos = newX;
                         yPos += yDirection;
                     }
-
-                }else{
+                }
+                else {
+                    int xDirection = 1;
+                    if (x < xPos){xDirection = -1;}
                     for (int i = 1; i <= abs(x - startX); i++){
                         int newY = startY + round(i * gradient);
                         if (!inBounds(xPos + xDirection, newY) || (isFull(xPos + xDirection, newY) && get(xPos + xDirection, newY).state != "liquid")){break;}
@@ -74,7 +73,7 @@ class Grid{
             }
 
             if (xPos != element->x || yPos != element->y){ // If the move positions have changed, move there
-                if (isFull(xPos, yPos) && get(xPos, yPos).state == "liquid"){
+                if (isFull(xPos, yPos)){
                     swap(element, xPos, yPos);
                 }else{
                     move(element, xPos, yPos);

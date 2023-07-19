@@ -52,6 +52,7 @@ void place_element(int x0, int y0){
             case 6: placedElement = new Smoke(x, y); break;
             case 7: placedElement = new Oil(x, y); break;
             case 8: placedElement = new Slime(x, y); break;
+            case 9: placedElement = new Acid(x, y); break;
         }
         if (grid.isFull(x, y) && grid.getPtr(x, y)->tag == placedElement->tag) {continue;} // don't overwrite same element
         grid.set(x, y, placedElement);
@@ -59,9 +60,6 @@ void place_element(int x0, int y0){
 }
 
 void placeBetween(int startX, int startY, int endX, int endY){
-    int xDirection = 1;
-    if (endX < startX){xDirection = -1;}
-
     int yDirection = 1;
     if (endY < startY){yDirection = -1;}
 
@@ -69,8 +67,8 @@ void placeBetween(int startX, int startY, int endX, int endY){
         for (int i = 0; i <= abs(endY - startY); i++){
             place_element(startX, startY + i * yDirection);
         }
-
-    }else { // Not moving vertically
+    }
+    else { // Not moving vertically
         float gradient = (float)(endY - startY) / (float)(endX - startX);
 
         if (abs(gradient) > 1){
@@ -80,6 +78,8 @@ void placeBetween(int startX, int startY, int endX, int endY){
             }
         }
         else{
+            int xDirection = 1;
+            if (endX < startX){xDirection = -1;}
             for (int i = 0; i <= abs(endX - startX); i++){
                 place_element(startX + i * xDirection, startY + round(i * gradient) * xDirection);
             }
@@ -289,6 +289,10 @@ int main(int argc, char* args[]){
 
                     case SDLK_9:
                         selectedElement = 8;
+                        break;
+
+                    case SDLK_0:
+                        selectedElement = 9;
                         break;
 
                     case SDLK_h:

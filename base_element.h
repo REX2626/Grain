@@ -23,6 +23,7 @@ class Element{
         int fireTicks = 1000;
         float health = 100;
         float heatCapacity = 1; // must be greater than 1
+        int acidResistance = 1; // >= 0, greater the value -> more acid required to destroy element
 
         Element(int x, int y): x(x), y(y){
             initElement();
@@ -126,11 +127,13 @@ class Element{
             colour = baseColour;
         }
 
-        virtual bool attemptSetOnFire(){ return false; }
+        virtual bool attemptSetOnFire() {return false;}
 
-        virtual bool canBeSetOnFire(){ return false; }
+        virtual bool canBeSetOnFire() {return false;}
 
-        virtual double getDensity(){return NAN;}
+        virtual double getDensity() {return NAN;}
+
+        virtual int acidify() {health -= 100 / acidResistance; return acidResistance;}
 
         void print(){
             cout << "Element of x: " << x << " y: " << y << "\n";
