@@ -9,7 +9,7 @@ using namespace std;
 const int FPS = 60;
 const int WIDTH = 1000, HEIGHT = 600;
 const int GRID_SIZE = 4;
-const int MAX_PLACE_SIZE = 10;
+const int MAX_PLACE_SIZE = 20;
 const int GRID_WIDTH = WIDTH / GRID_SIZE, GRID_HEIGHT = HEIGHT / GRID_SIZE;
 
 #include "base_element.h"
@@ -54,7 +54,7 @@ void place_element(int x0, int y0){
             case 8: placedElement = new Slime(x, y); break;
             case 9: placedElement = new Acid(x, y); break;
         }
-        if (grid.isFull(x, y) && grid.getPtr(x, y)->tag == placedElement->tag) {continue;} // don't overwrite same element
+        if (grid.isFull(x, y) && grid.getPtr(x, y)->tag == placedElement->tag) {delete placedElement; continue;} // don't overwrite same element
         grid.set(x, y, placedElement);
     }
 }
@@ -99,7 +99,7 @@ void remove_element() {
         y = y0 + dy;
         if (!grid.inBounds(x, y)) {continue;} // Only remove element in bounds
         if ((dx*dx) + (dy*dy) > placeSize*placeSize + 1) {continue;} // Only remove element inside circle around cursor
-        grid.set(x, y, nullptr);
+        grid.reset(x, y);
     }
 }
 
@@ -172,7 +172,7 @@ void update(double deltaTime){
     for (y=0; y < GRID_HEIGHT; ++y) {
         if (grid.isEmpty(x, y)) {continue;}
         if (grid.getPtr(x, y)->health > 0) {continue;}
-        grid.set(x, y, nullptr);
+        grid.reset(x, y);
     }
 
     // create smoke, yes this is in the wrong place
@@ -225,11 +225,7 @@ int main(int argc, char* args[]){
     }
 
     // Fill grid with null pointers
-    for (int x = 0; x < GRID_WIDTH; x++){
-        for (int y = 0; y < GRID_HEIGHT; y++){
-            grid.set(x, y, nullptr);
-        }
-    }
+    grid.resetPtr();
 
     // Set up Main loop
     double deltaTime = 0;

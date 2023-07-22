@@ -267,8 +267,8 @@ class MovableSolid: public Solid{
                 if (grid.isEmpty(x, y+1)){
                     grid.move(this, x, y+1);
                 }
-                // Displaces liquid
-                else if (grid.get(x, y+1).state == "liquid"){
+                // Displaces liquid or gas
+                else if (grid.get(x, y+1).state == "liquid" || grid.get(x, y+1).state == "gas"){
                     grid.swap(this, x, y+1);
                 }
                 // Moves diagonally randomly
@@ -494,24 +494,24 @@ class Acid: public Liquid{
             colour = {(Uint8)(130 + rand() % 40), (Uint8)(40 + rand() % 20), (Uint8)(20 + rand() % 20)}; // random colour
 
             // check for 8 adjacent neighbours, and try to acidify
-            for (int i = -1; i <= 1; i++){
-                for (int j = -1; j <= 1; j++){
-                    if (i == 0 && j == 0) {continue;}
-                    if (!grid.inBounds(x + i*xDir, y + j*yDir) || grid.isEmpty(x + i*xDir, y + j*yDir)) {continue;}
-                    string tag = grid.getPtr(x + i*xDir, y + j*yDir)->tag;
-                    if (tag == "acid" || tag == "smoke") {continue;}
+            for (int i = -1; i <= 1; i++)
+            for (int j = -1; j <= 1; j++) {
 
-                    health -= 100/acidStrength * grid.getPtr(x + i*xDir, y + j*yDir)->acidify();
+                if (i == 0 && j == 0) {continue;}
+                if (!grid.inBounds(x + i*xDir, y + j*yDir) || grid.isEmpty(x + i*xDir, y + j*yDir)) {continue;}
+                string tag = grid.getPtr(x + i*xDir, y + j*yDir)->tag;
+                if (tag == "acid" || tag == "smoke") {continue;}
 
-                    if (rand()%4 == 0) { // 25% chance to generate smoke
-                        Smoke *smoke = new Smoke(x, y);
-                        smoke->lifetime = 80 + rand()%41; // 80-120 ticks
-                        grid.set(x, y, smoke);
-                    }
+                health -= 100.0/acidStrength * grid.getPtr(x + i*xDir, y + j*yDir)->acidify();
 
-                    Liquid::update(deltaTime);
-                    return;
+                if (rand()%4 == 0 && grid.inBounds(x, y - 1) && grid.isEmpty(x, y - 1)) { // 25% chance to generate smoke
+                    Smoke *smoke = new Smoke(x, y - 1);
+                    smoke->lifetime = 80 + rand()%41; // 80-120 ticks
+                    grid.set(x, y - 1, smoke);
                 }
+
+                Liquid::update(deltaTime);
+                return;
             }
 
             Liquid::update(deltaTime);

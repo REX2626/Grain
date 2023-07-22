@@ -1,3 +1,6 @@
+#include <iostream>
+using namespace std;
+
 class Grid{
     private:
         Element* matrix[GRID_WIDTH][GRID_HEIGHT]; // Array of pointers, pointing to Elements
@@ -7,12 +10,30 @@ class Grid{
         void reset(){
             for (int x = 0; x < GRID_WIDTH; x++){
                 for (int y = 0; y < GRID_HEIGHT; y++){
-                    matrix[x][y] = nullptr;
+                    reset(x, y);
                 }
             }
         }
 
-        void set(int x, int y, Element* elementPtr){
+        void reset(int x, int y){
+            delete matrix[x][y];
+            matrix[x][y] = nullptr;
+        }
+
+        void resetPtr(){
+            for (int x = 0; x < GRID_WIDTH; x++){
+                for (int y = 0; y < GRID_HEIGHT; y++){
+                    resetPtr(x, y);
+                }
+            }
+        }
+
+        void resetPtr(int x, int y){
+            matrix[x][y] = nullptr;
+        }
+
+        void set(int x, int y, Element *elementPtr){
+            delete matrix[x][y];
             matrix[x][y] = elementPtr;
         }
 
@@ -24,9 +45,10 @@ class Grid{
             return matrix[x][y];
         }
 
-        void move(Element *element, int x, int y){
-            matrix[x][y] = matrix[element->x][element->y];
-            matrix[element->x][element->y] = nullptr;
+        // element should not be at the same position as (x, y)
+        void move(Element *elementPtr, int x, int y){
+            set(x, y, elementPtr);
+            resetPtr(elementPtr->x, elementPtr->y); // delete pointer of current position
             matrix[x][y]->setX(x);
             matrix[x][y]->setY(y);
         }
