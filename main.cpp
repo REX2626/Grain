@@ -199,7 +199,6 @@ void update(double deltaTime){
 }
 
 int main(int argc, char* args[]){
-
     // Initial message & SDL version
     SDL_version version;
     SDL_GetVersion(&version);
